@@ -1,0 +1,77 @@
+CREATE DATABASE licitaciones;
+CREATE USER licitacione_user WITH PASSWORD 'licitacione2025';
+ALTER ROLE licitacione_user SET client_encoding TO 'utf8';
+ALTER ROLE licitacione_user SET default_transaction_isolation TO 'read committed';
+ALTER ROLE licitacione_user SET timezone TO 'UTC';
+GRANT ALL PRIVILEGES ON DATABASE licitaciones TO licitacione_user;
+
+mkdir ~/web_licitacione
+gunicorn --bind 0.0.0.0:8000 gestion_licitaciones.wsgi
+
+sudo nano /etc/systemd/system/licitaciones.socket
+
+[Unit]
+Description=gunicorn socket
+
+[Socket]
+ListenStream=/run/licitaciones.sock
+
+[Install]
+WantedBy=sockets.target
+
+
+
+
+
+sudo nano /etc/systemd/system/licitaciones.service
+
+[Unit]
+Description=gunicorn daemon
+Requires=gunicorn.socket
+After=network.target
+
+[Service]
+User=sammy
+Group=www-data
+WorkingDirectory=/home/siglinux/web_licitacione/Licitaciones
+ExecStart=/home/siglinux/web_licitacione/venv/bin/gunicorn \
+          --access-logfile - \
+          --workers 3 \
+          --bind unix:/run/licitaciones.sock \
+          gestion_licitaciones.wsgi:application
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+sudo systemctl start licitaciones.socket
+sudo systemctl enable licitaciones.socket
+
+sudo systemctl status licitaciones.socket
+
+sudo journalctl -u licitaciones
+
+sudo systemctl daemon-reload
+sudo systemctl restart licitaciones
+
+
+sudo nano /etc/nginx/sites-available/web_licitaciones
+
+
+server {
+    listen 8010;
+    server_name 192.168.12.141;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        root //home/siglinux/web_licitacione/Licitaciones;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/licitaciones.sock;
+    }
+}
+
+sudo ln -s /etc/nginx/sites-available/web_licitaciones /etc/nginx/sites-enabled

@@ -1,0 +1,55 @@
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color .22s ease, color .22s ease, transform .16s ease;
+    -webkit-tap-highlight-color: transparent;
+
+    /* variables por defecto */
+    --bg: #ffffff;
+    --color: #000000;
+    --border: #000000;
+    --bg-hover: var(--border);
+    --color-hover: #ffffff;
+
+    background: var(--bg);
+    color: var(--color);
+    border: 2px solid var(--border);
+}
+
+.btn:hover {
+    background: var(--bg-hover);
+    color: var(--color-hover);
+    transform: scale(1.04);
+}
+
+.btn:active {
+    transform: scale(0.995);
+}
+
+/* azul corporativo */
+.btn-azul {
+    --color: #005bc5;
+    --border: #005bc5;
+}
+
+/* verde */
+.btn-verde {
+    --color: #0ea600;
+    --border: #0ea600;
+}
+
+/* rojo */
+.btn-rojo {
+    --color: #d40000;
+    --border: #d40000;
+}
+
+/* naranja */
+.btn-naranja {
+    --color: #ff7a00;
+    --border: #ff7a00;
+}

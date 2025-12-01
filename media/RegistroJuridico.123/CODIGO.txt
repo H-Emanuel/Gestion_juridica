@@ -1,0 +1,85 @@
+SELECT 
+    p.id_proyecto AS id_del_proyecto_del,
+    p.nombre_iniciativa  AS nombre_proyecto,
+    h.hito_actual  as hito_actual,
+    p.entidad_financiera as entidad_financiera,
+    p.tipologia  as tipologia,
+    p.ppto_inv as presupuesto,
+    p.aporte_mun as aporte_municipal,
+    p.financiamiento_externo as aporte_externo,
+    p.monto_final as monto_adjudicado,
+    h.hito_1  AS hito_1,
+    h.hito_2  as hito_2,
+    h.hito_3  as hito_3,
+    h.hito_4  as hito_4,
+    h.hito_5  as hito_5,
+    h.hito_6  as hito_6,
+    h.hito_7  as hito_7,
+    h.hito_8  as hito_8,
+    h.hito_9  as hito_9,
+    h.hito_10  as hito_10,
+    h.hito_11 as hito_11,
+	CASE
+        WHEN h.hito_11 IS NOT NULL THEN 'Obra: Fecha Acta Recepción Provisoria.'
+        WHEN h.hito_10 IS NOT NULL THEN 'Liquidación por incumplimiento'
+        WHEN h.hito_9  IS NOT NULL THEN 'Inicio de Obra o Diseño'
+        WHEN h.hito_8  IS NOT NULL THEN 'Fecha Contrato'
+        WHEN h.hito_7  IS NOT NULL THEN 'Fecha de Adjudicación'
+        WHEN h.hito_6  IS NOT NULL THEN 'Fecha Publicación Mercado Público'
+        WHEN h.hito_5  IS NOT NULL THEN 'Fecha Solicitud Pedido Licitación'
+        WHEN h.hito_4  IS NOT NULL THEN 'Fecha Aprobación Financiera'
+        WHEN h.hito_3  IS NOT NULL THEN 'Fecha Aprobación CORE'
+        WHEN h.hito_2  IS NOT NULL THEN 'Fecha Aprobación técnica'
+        WHEN h.hito_1  IS NOT NULL THEN 'Fecha de Postulación'
+        ELSE 'Sin hitos'
+	    END AS ultimo_hito,
+	    CASE
+	        WHEN h.hito_11 IS NOT NULL THEN h.hito_11
+	        WHEN h.hito_10 IS NOT NULL THEN h.hito_10
+	        WHEN h.hito_9  IS NOT NULL THEN h.hito_9
+	        WHEN h.hito_8  IS NOT NULL THEN h.hito_8
+	        WHEN h.hito_7  IS NOT NULL THEN h.hito_7
+	        WHEN h.hito_6  IS NOT NULL THEN h.hito_6
+	        WHEN h.hito_5  IS NOT NULL THEN h.hito_5
+	        WHEN h.hito_4  IS NOT NULL THEN h.hito_4
+	        WHEN h.hito_3  IS NOT NULL THEN h.hito_3
+	        WHEN h.hito_2  IS NOT NULL THEN h.hito_2
+	        WHEN h.hito_1  IS NOT NULL THEN h.hito_1
+	        ELSE NULL
+	    END AS valor_ultimo_hito
+
+FROM 
+    proyectos_proyecto p
+INNER JOIN 
+    proyectos_hitos h
+    ON h.id_proyecto_id = p.id_proyecto WHERE 
+    (
+        h.hito_1 BETWEEN '2024-01-01' AND '2025-07-23' OR
+        h.hito_2 BETWEEN '2024-01-01' AND '2025-07-23' OR
+        h.hito_3 BETWEEN '2024-01-01' AND '2025-07-23' OR
+        h.hito_4 BETWEEN '2024-01-01' AND '2025-07-23' OR
+        h.hito_5 BETWEEN '2024-01-01' AND '2025-07-23' OR
+        h.hito_6 BETWEEN '2024-01-01' AND '2025-07-23' OR
+        h.hito_7 BETWEEN '2024-01-01' AND '2025-07-23' OR
+        h.hito_8 BETWEEN '2024-01-01' AND '2025-07-23' OR
+        h.hito_9 BETWEEN '2024-01-01' AND '2025-07-23' OR
+        h.hito_10 BETWEEN '2024-01-01' AND '2025-07-23' OR
+        h.hito_11 BETWEEN '2024-01-01' AND '2025-07-23'
+    )
+    OR (
+        -- Añadimos: si el hito actual tiene fecha dentro del rango
+        CASE h.hito_actual
+            WHEN 'hito_1' THEN h.hito_1
+            WHEN 'hito_2' THEN h.hito_2
+            WHEN 'hito_3' THEN h.hito_3
+            WHEN 'hito_4' THEN h.hito_4
+            WHEN 'hito_5' THEN h.hito_5
+            WHEN 'hito_6' THEN h.hito_6
+            WHEN 'hito_7' THEN h.hito_7
+            WHEN 'hito_8' THEN h.hito_8
+            WHEN 'hito_9' THEN h.hito_9
+            WHEN 'hito_10' THEN h.hito_10
+            WHEN 'hito_11' THEN h.hito_11
+            ELSE NULL
+        END BETWEEN '2024-01-01' AND '2025-07-23');
+

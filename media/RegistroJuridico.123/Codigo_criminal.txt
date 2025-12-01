@@ -1,0 +1,78 @@
+WITH ventanas(label, ini, fin) AS (
+  VALUES
+    ('jun-22'::text, DATE '2022-01-01', DATE '2022-06-30'),
+    ('jun-23'::text, DATE '2023-01-01', DATE '2023-06-30')
+),
+base AS (
+  SELECT
+    p.id_proyecto,
+    p.ppto_inv,
+    p.monto_final,
+    (h.hito_9)::date  AS h9,
+    (h.hito_11)::date AS h11
+  FROM secpla_proyectos.public.proyectos_proyecto  p
+  LEFT JOIN secpla_proyectos.public.proyectos_hitos h ON h.id_proyecto_id = p.id_proyecto
+),
+clasif AS (
+  SELECT
+    v.label,
+    CASE
+      WHEN b.h11 BETWEEN v.ini AND v.fin
+        THEN 'Concluidas'
+      WHEN b.h9 BETWEEN v.ini AND v.fin
+           AND (b.h11 IS NULL OR b.h11 > v.fin)
+        THEN 'En Ejecución'
+      ELSE NULL::text
+    END AS categoria,
+    1 AS cnt,
+    CASE
+      WHEN b.h11 BETWEEN v.ini AND v.fin
+        THEN COALESCE(b.monto_final, b.ppto_inv, 0)
+      WHEN b.h9 BETWEEN v.ini AND v.fin
+           AND (b.h11 IS NULL OR b.h11 > v.fin)
+        THEN COALESCE(b.ppto_inv, 0)
+      ELSE 0
+    END AS monto
+  FROM base b
+  CROSS JOIN ventanas v
+),
+resum AS (
+  SELECT
+    categoria,
+    SUM(cnt)   FILTER (WHERE label = 'jun-22') AS cant_jun22,
+    SUM(monto) FILTER (WHERE label = 'jun-22') AS monto_jun22,
+    SUM(cnt)   FILTER (WHERE label = 'jun-23') AS cant_jun23,
+    SUM(monto) FILTER (WHERE label = 'jun-23') AS monto_jun23
+  FROM clasif
+  WHERE categoria IS NOT NULL
+  GROUP BY categoria
+),
+tot AS (
+  SELECT
+    'Totales'::text AS categoria,
+    SUM(cant_jun22)  AS cant_jun22,
+    SUM(monto_jun22) AS monto_jun22,
+    SUM(cant_jun23)  AS cant_jun23,
+    SUM(monto_jun23) AS monto_jun23
+  FROM resum
+)
+SELECT
+  categoria,
+  cant_jun22,
+  monto_jun22,
+  cant_jun23,
+  monto_jun23,
+  CASE
+    WHEN NULLIF(monto_jun22, 0) IS NULL THEN NULL::text
+    ELSE ROUND( (monto_jun23 - monto_jun22) / NULLIF(monto_jun22, 0) * 100.0 )::text || '%'
+  END AS "Variación Monto"
+FROM (
+  SELECT * FROM resum
+  UNION ALL
+  SELECT * FROM tot
+) x
+ORDER BY CASE categoria
+  WHEN 'Concluidas' THEN 1
+  WHEN 'En Ejecución' THEN 2
+  ELSE 3
+END;
