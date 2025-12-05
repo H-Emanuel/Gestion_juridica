@@ -111,7 +111,7 @@
 <div class="container">
     <h2>📄 Registrar Oficio Jurídico</h2>
 
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" id="form-oficio" enctype="multipart/form-data">
         {% csrf_token %}
 
         <!-- FILA 1: Folio y N° Oficio -->
@@ -139,28 +139,47 @@
         <div class="row">
             <div class="col">
                 <label>Fecha de Oficio</label>
-                <input class="small-box" type="date" name="fecha_oficio" required>
+                <input class="small-box" type="date" name="fecha_oficio" required id="fecha_oficio">
             </div>
 
             <div class="col">
                 <label>Fecha de Respuesta</label>
-                <input class="small-box" type="date" name="fecha_respuesta">
+                <input class="small-box" type="date" name="fecha_respuesta" id="fecha_respuesta">
             </div>
         </div>
-
-        <!-- RESPUESTA -->
-        <div class="row" style="margin-top: 20px;">
-            <div class="col" style="width: 100%;">
-                <label>Respuesta</label>
-                <textarea name="respuesta" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></textarea>
-            </div>
-        </div>
-
         <!-- ASIGNACIÓN -->
         <div class="row" style="margin-top: 20px;">
             <div class="col" style="width: 100%;">
-                <label>Asignación</label>
-                <input type="text" name="asignacion" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;">
+            <label>Asignación</label>
+            <select name="asignacion" id="asignacion" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;">
+                <option value="">-- Seleccionar --</option>
+                <option value="Administración Municipal">Administración Municipal</option>
+                <option value="Alcaldía">Alcaldía</option>
+                <option value="Delegación territorial">Delegación territorial</option>
+                <option value="Dirección de Administración y Finanzas">Dirección de Administración y Finanzas</option>
+                <option value="Dirección de Asesoría Jurídica">Dirección de Asesoría Jurídica</option>
+                <option value="Dirección de Desarrollo Comunitario">Dirección de Desarrollo Comunitario</option>
+                <option value="Dirección de Desarrollo Cultural">Dirección de Desarrollo Cultural</option>
+                <option value="Dirección de Género, Mujeres y Diversidades">Dirección de Género, Mujeres y Diversidades</option>
+                <option value="Dirección de Medioambiente">Dirección de Medioambiente</option>
+                <option value="Dirección de Obras Municipales">Dirección de Obras Municipales</option>
+                <option value="Dirección de Operaciones">Dirección de Operaciones</option>
+                <option value="Dirección de Seguridad Ciudadana">Dirección de Seguridad Ciudadana</option>
+                <option value="Dirección de Tránsito y Transporte públicos">Dirección de Tránsito y Transporte públicos</option>
+                <option value="Dirección de Vivienda, Barrio y Territorio">Dirección de Vivienda, Barrio y Territorio</option>
+                <option value="Dirección desarrollo Económico y Cooperación Internacional">Dirección desarrollo Económico y Cooperación Internacional</option>
+                <option value="Gabinete">Gabinete</option>
+                <option value="Juzgados">Juzgados</option>
+                <option value="SECPLA">SECPLA</option>
+                <option value="otro">Otro</option>
+            </select>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 15px; display: none;" id="otro-departamento-row">
+            <div class="col" style="width: 100%;">
+            <label>Especifique el departamento</label>
+            <input type="text" name="otro_departamento" id="otro_departamento" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" placeholder="Escriba el departamento">
             </div>
         </div>
 
@@ -188,11 +207,12 @@
 
         <!-- BOTÓN ICONO -->        
 
-        <button class="btn btn-azul" type="submit">Guardar Oficio Jurídico💾</button>
+        <button class="btn btn-azul btn-tooltip" type="submit" title="Guardar el oficio jurídico" style="position: relative;">💾</button>
 
+    
     </form>
     <script>
-document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function () {
     const dropArea   = document.getElementById('drop-area');
     const fileInput  = document.getElementById('file-input');
     const browseBtn  = document.getElementById('browse-btn');
@@ -319,7 +339,114 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 });
+    </script>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const fechaOficio    = document.getElementById('fecha_oficio');
+    const fechaRespuesta = document.getElementById('fecha_respuesta');
+    const form           = document.getElementById('form-oficio');
+
+    const inputsFecha = [fechaOficio, fechaRespuesta];
+    const feriados = new Set();
+    let feriadosCargados = false;
+
+    // 1) Cargar feriados desde la API
+    fetch('https://api.boostr.cl/holidays.json')
+    .then(response => response.json())
+    .then(data => {
+        let lista = [];
+
+        // Caso 1 → Si data ES un array
+        if (Array.isArray(data)) {
+            lista = data;
+        }
+
+        // Caso 2 → Si data es OBJETO y tiene una clave con array
+        else {
+            // Buscar cualquier array dentro del objeto
+            for (const key in data) {
+                if (Array.isArray(data[key])) {
+                    lista = data[key];
+                    break;
+                }
+            }
+        }
+
+        if (lista.length === 0) {
+            console.error("No se encontró ninguna lista de feriados en la API.");
+            return;
+        }
+
+        lista.forEach(item => {
+            if (item.date) {
+                feriados.add(item.date);
+            }
+        });
+
+        feriadosCargados = true;
+        console.log("Feriados cargados:", feriados);
+    })
+    .catch(error => {
+        console.error('No se pudieron cargar los feriados:', error);
+    });
+
+
+    // 2) Función para ver si una fecha es inválida
+    function esFechaInvalida(valorFecha) {
+        if (!valorFecha) return false;
+
+        const fecha = new Date(valorFecha + 'T00:00:00');
+
+        const diaSemana = fecha.getDay(); // 0 dom, 6 sáb
+        if (diaSemana === 0 || diaSemana === 6) {
+            return 'No se permiten sábados ni domingos.';
+        }
+
+        if (feriados.has(valorFecha)) {
+            return 'La fecha seleccionada es un día feriado.';
+        }
+
+        return false;
+    }
+
+    // 3) Validación genérica (sirve para change y para submit)
+    function validarFechas(mostrarAlert = false) {
+        for (const input of inputsFecha) {
+            if (!input) continue;
+
+            const valor = input.value;
+            const mensajeError = esFechaInvalida(valor);
+
+            if (mensajeError) {
+                input.value = '';
+                input.setCustomValidity(mensajeError);
+                input.reportValidity();
+
+                if (mostrarAlert) {
+                    if (mensajeError.includes('feriado')) {
+                        alert('No se puede guardar el oficio en un día feriado.');
+                    } else {
+                        alert(mensajeError);
+                    }
+                }
+                return false; // hay al menos una fecha mala
+            } else {
+                input.setCustomValidity('');
+            }
+        }
+        return true;
+    }
+
+    // 4) Validar al cambiar fecha
+    inputsFecha.forEach(input => {
+        input.addEventListener('change', function () {
+            validarFechas(false);
+        });
+    });
+});
 </script>
+
 
     <a href="/">⬅ Volver a la Lista</a>
 </div>

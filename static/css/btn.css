@@ -30,26 +30,43 @@
     transform: scale(0.995);
 }
 
-/* azul corporativo */
+.btn-tooltip:hover::after {
+    content: attr(title);
+    position: absolute;
+    top: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--tooltip-bg);
+    color: var(--tooltip-color);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+
 .btn-azul {
     --color: #005bc5;
     --border: #005bc5;
+    --tooltip-bg: #003366;  /* tooltip azul oscuro */
 }
 
-/* verde */
 .btn-verde {
     --color: #0ea600;
     --border: #0ea600;
+    --tooltip-bg: #066e00;
 }
 
-/* rojo */
 .btn-rojo {
     --color: #d40000;
     --border: #d40000;
+    --tooltip-bg: #7a0000;
 }
 
-/* naranja */
 .btn-naranja {
     --color: #ff7a00;
     --border: #ff7a00;
+    --tooltip-bg: #b25400;
 }

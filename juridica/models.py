@@ -11,6 +11,8 @@ class RegistroJuridico(models.Model):
     fecha_respuesta = models.DateField(null=True, blank=True)
     respuesta = models.TextField(blank=True)
     asignacion = models.CharField(max_length=100, blank=True)
+    terminado = models.BooleanField(default=False)
+    
 
     def __str__(self):
         return f"{self.folio} - {self.oficio}"

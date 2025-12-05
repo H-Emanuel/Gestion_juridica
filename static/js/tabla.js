@@ -18,7 +18,7 @@ let table = $('#registrosTable').DataTable({
         type: "GET",
     },
     pageLength: 6,
-    order: [[3, "desc"]],
+    order: [[0, "desc"]],
     columns: [
         { data: "folio" },            // 0
         { data: "oficio" },           // 1
@@ -42,15 +42,16 @@ let table = $('#registrosTable').DataTable({
             }
         },
         {
-            data: null,               // 6
+            data: null,               
             orderable: false,
             searchable: false,
             render: function (data, type, row) {
                 if (type !== 'display') return null;
                 return `
-                    <a href="/editar/${row.id}/" class="btn btn-naranja">Editar</a>
-                    <a href="/eliminar/${row.id}/" class="btn btn-rojo"
-                        onclick="return confirm('¿Eliminar registro?')">Eliminar</a>
+                    <a href="/eliminar/${row.id}/" class="btn btn-rojo btn-tooltip" title="Eliminar oficio jurídico" onclick="return confirm('¿Eliminar registro?')">❌​</a>
+                    <a href="/editar/${row.id}/" class="btn btn-naranja btn-tooltip" title="Editar oficio jurídico">✏️​</a>
+                    <a href="/reiterar_oficio/${row.id}/" class="btn btn-azul btn-tooltip" title="Reiterar oficio jurídico">🕑​</a>
+                    <a href="/reiterar_oficio/${row.id}/" class="btn btn-verde btn-tooltip" title=" oficio jurídico">✔️​​</a>
                 `;
             }
         }
@@ -64,33 +65,30 @@ let table = $('#registrosTable').DataTable({
 
     function highlightSearch() {
         let searchText = $('.dataTables_filter input').val().trim().toLowerCase();
+
         if (searchText.length === 0) {
             $('#registrosTable tbody td').removeClass('highlight-cell');
             return;
         }
 
+        const highlightColumns = [0, 1,2]; // los índices que quieres revisar
+
         $('#registrosTable tbody tr').each(function () {
             let cells = $(this).find('td');
 
-            let cellOficio = cells.eq(1);  // oficio
-            let cellMateria = cells.eq(2); // materia
+            highlightColumns.forEach(function(index) {
+                let cell = cells.eq(index);
+                let text = cell.text().toLowerCase();
 
-            let textOficio = cellOficio.text().toLowerCase();
-            let textMateria = cellMateria.text().toLowerCase();
-
-            if (textOficio.includes(searchText)) {
-                cellOficio.addClass('highlight-cell');
-            } else {
-                cellOficio.removeClass('highlight-cell');
-            }
-
-            if (textMateria.includes(searchText)) {
-                cellMateria.addClass('highlight-cell');
-            } else {
-                cellMateria.removeClass('highlight-cell');
-            }
+                if (text.includes(searchText)) {
+                    cell.addClass('highlight-cell');
+                } else {
+                    cell.removeClass('highlight-cell');
+                }
+            });
         });
     }
+
 
     $('.dataTables_filter input').on('keyup', function () {
         setTimeout(highlightSearch, 200);
@@ -103,7 +101,7 @@ let table = $('#registrosTable').DataTable({
     // Estilo para celdas resaltadas
     $('<style>')
         .prop('type', 'text/css')
-        .html('.highlight-cell { background-color: #b7e4c7 !important; font-weight: bold !important; }')
+        .html('.highlight-cell { background-color: #50d6ff7e !important; font-weight: bold !important; }')
         .appendTo('head');
 
 });

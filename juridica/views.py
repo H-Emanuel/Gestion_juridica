@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.db import transaction
+from django.views.decorators.csrf import csrf_exempt
 
 def lista_registros(request):
     query = request.GET.get("q")
@@ -12,20 +13,24 @@ def lista_registros(request):
 
     return render(request, "lista.html", {"registros": registros})
 
-
+@csrf_exempt
 def crear_registro(request):
     if request.method == "POST":
         try:
             with transaction.atomic():
                 # 1) Crear el registro jurídico
+                # Determinar el valor de asignacion
+                asignacion = request.POST.get("asignacion", "").strip()
+                if asignacion == "otro":
+                    asignacion = request.POST.get("otro_departamento", "").strip()
+                
                 registro = RegistroJuridico.objects.create(
                     folio=request.POST.get("folio", "").strip(),
                     oficio=request.POST.get("oficio", "").strip(),
                     materia=request.POST.get("materia", "").strip(),
-                    fecha_oficio=request.POST.get("fecha_oficio"),      # viene como 'YYYY-MM-DD'
+                    fecha_oficio=request.POST.get("fecha_oficio"),
                     fecha_respuesta=request.POST.get("fecha_respuesta") or None,
-                    respuesta=request.POST.get("respuesta", "").strip(),
-                    asignacion=request.POST.get("asignacion", "").strip(),
+                    asignacion=asignacion,
                 )
 
                 # 2) Obtener TODOS los archivos enviados en "archivos"
@@ -52,14 +57,13 @@ def crear_registro(request):
 
     return render(request, "formulario.html")
 
-
+@csrf_exempt
 def editar_registro(request, id):
     registro = get_object_or_404(RegistroJuridico, id=id)
 
     if request.method == "POST":
         try:
             with transaction.atomic():
-                # 1) Actualizar campos del registro
                 registro.folio = request.POST.get("folio", "").strip()
                 registro.oficio = request.POST.get("oficio", "").strip()
                 registro.materia = request.POST.get("materia", "").strip()
@@ -69,7 +73,6 @@ def editar_registro(request, id):
                 registro.asignacion = request.POST.get("asignacion", "").strip()
                 registro.save()
 
-                # 2) Eliminar documentos marcados
                 ids_eliminar = request.POST.getlist("eliminar_docs")  # vienen como strings
 
                 for doc_id in ids_eliminar:
@@ -80,7 +83,6 @@ def editar_registro(request, id):
                     except Documento.DoesNotExist:
                         pass
 
-                # 3) Agregar nuevos documentos (si se subieron)
                 archivos_nuevos = request.FILES.getlist("archivos")
                 for archivo in archivos_nuevos:
                     Documento.objects.create(
@@ -102,9 +104,12 @@ def editar_registro(request, id):
         "registro": registro
         # no hace falta pasar documentos, se acceden como registro.documentos.all
     })
+@csrf_exempt
+def reiterar_oficio(request, id):
 
+    return render(request, "reiterar.html",)
 
-
+@csrf_exempt
 def eliminar_registro(request, id):
     registro = get_object_or_404(RegistroJuridico, id=id)
     registro.delete()

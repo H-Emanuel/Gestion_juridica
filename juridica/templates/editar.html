@@ -136,8 +136,55 @@
 
         <div class="form-group">
             <label for="asignacion">Asignación</label>
-            <input type="text" id="asignacion" name="asignacion" class="form-control" value="{{ registro.asignacion }}" required>
+            <select name="asignacion" id="asignacion" class="form-control" required>
+                <option value="">-- Seleccionar --</option>
+                <option value="Administración Municipal" {% if registro.asignacion == 'Administración Municipal' %}selected{% endif %}>Administración Municipal</option>
+                <option value="Alcaldía" {% if registro.asignacion == 'Alcaldía' %}selected{% endif %}>Alcaldía</option>
+                <option value="Delegación territorial" {% if registro.asignacion == 'Delegación territorial' %}selected{% endif %}>Delegación territorial</option>
+                <option value="Dirección de Administración y Finanzas" {% if registro.asignacion == 'Dirección de Administración y Finanzas' %}selected{% endif %}>Dirección de Administración y Finanzas</option>
+                <option value="Dirección de Asesoría Jurídica" {% if registro.asignacion == 'Dirección de Asesoría Jurídica' %}selected{% endif %}>Dirección de Asesoría Jurídica</option>
+                <option value="Dirección de Desarrollo Comunitario" {% if registro.asignacion == 'Dirección de Desarrollo Comunitario' %}selected{% endif %}>Dirección de Desarrollo Comunitario</option>
+                <option value="Dirección de Desarrollo Cultural" {% if registro.asignacion == 'Dirección de Desarrollo Cultural' %}selected{% endif %}>Dirección de Desarrollo Cultural</option>
+                <option value="Dirección de Género, Mujeres y Diversidades" {% if registro.asignacion == 'Dirección de Género, Mujeres y Diversidades' %}selected{% endif %}>Dirección de Género, Mujeres y Diversidades</option>
+                <option value="Dirección de Medioambiente" {% if registro.asignacion == 'Dirección de Medioambiente' %}selected{% endif %}>Dirección de Medioambiente</option>
+                <option value="Dirección de Obras Municipales" {% if registro.asignacion == 'Dirección de Obras Municipales' %}selected{% endif %}>Dirección de Obras Municipales</option>
+                <option value="Dirección de Operaciones" {% if registro.asignacion == 'Dirección de Operaciones' %}selected{% endif %}>Dirección de Operaciones</option>
+                <option value="Dirección de Seguridad Ciudadana" {% if registro.asignacion == 'Dirección de Seguridad Ciudadana' %}selected{% endif %}>Dirección de Seguridad Ciudadana</option>
+                <option value="Dirección de Tránsito y Transporte públicos" {% if registro.asignacion == 'Dirección de Tránsito y Transporte públicos' %}selected{% endif %}>Dirección de Tránsito y Transporte públicos</option>
+                <option value="Dirección de Vivienda, Barrio y Territorio" {% if registro.asignacion == 'Dirección de Vivienda, Barrio y Territorio' %}selected{% endif %}>Dirección de Vivienda, Barrio y Territorio</option>
+                <option value="Dirección desarrollo Económico y Cooperación Internacional" {% if registro.asignacion == 'Dirección desarrollo Económico y Cooperación Internacional' %}selected{% endif %}>Dirección desarrollo Económico y Cooperación Internacional</option>
+                <option value="Gabinete" {% if registro.asignacion == 'Gabinete' %}selected{% endif %}>Gabinete</option>
+                <option value="Juzgados" {% if registro.asignacion == 'Juzgados' %}selected{% endif %}>Juzgados</option>
+                <option value="SECPLA" {% if registro.asignacion == 'SECPLA' %}selected{% endif %}>SECPLA</option>
+                <option value="otro" {% if registro.asignacion == 'otro' %}selected{% endif %}>Otro</option>
+            </select>
         </div>
+
+        <div class="form-group" id="otro-departamento-row" style="display: none;">
+            <label for="otro_departamento">Especifique el departamento</label>
+            <input type="text" id="otro_departamento" name="otro_departamento" class="form-control" placeholder="Escriba el departamento" value="{{ registro.otro_departamento|default:'' }}">
+        </div>
+
+        <script>
+            document.getElementById('asignacion').addEventListener('change', function() {
+                const otroDeptRow = document.getElementById('otro-departamento-row');
+                if (this.value === 'otro') {
+                    otroDeptRow.style.display = 'block';
+                    document.getElementById('otro_departamento').required = true;
+                } else {
+                    otroDeptRow.style.display = 'none';
+                    document.getElementById('otro_departamento').required = false;
+                }
+            });
+            
+            // Mostrar campo si hay valor guardado
+            window.addEventListener('DOMContentLoaded', function() {
+                const select = document.getElementById('asignacion');
+                if (select.value === 'otro') {
+                    document.getElementById('otro-departamento-row').style.display = 'block';
+                }
+            });
+        </script>
 
         <h5>Documentos actuales</h5>
         <ul class="list-group mb-3">
@@ -173,6 +220,19 @@
     </form>
     <br>
     <a href="/">Volver</a>
+
+        <script>
+            document.getElementById('asignacion').addEventListener('change', function() {
+            const otroDeptRow = document.getElementById('otro-departamento-row');
+            if (this.value === 'otro') {
+                otroDeptRow.style.display = 'flex';
+                document.getElementById('otro_departamento').required = true;
+            } else {
+                otroDeptRow.style.display = 'none';
+                document.getElementById('otro_departamento').required = false;
+            }
+            });
+        </script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {

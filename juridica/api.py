@@ -51,8 +51,6 @@ def RegistroJuridico_list(request):
 
         data = []
         for r in page:
-            # mismo criterio que tu template: si hay dias_transcurridos lo usamos
-            # aquí lo calculamos simple: desde fecha_oficio hasta hoy (o hasta respuesta si quieres)
             if r.fecha_oficio:
                 base = r.fecha_respuesta or date.today()
                 dias = (base - r.fecha_oficio).days
@@ -79,3 +77,17 @@ def RegistroJuridico_list(request):
         return JsonResponse(response, safe=False)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+
+def oficio_respodido(request, id):
+    try:
+        registro = RegistroJuridico.objects.get(id=id)
+        registro.terminado = True
+        registro.save()
+        return JsonResponse({
+                "folio": registro.folio,
+                "oficio": registro.oficio,
+
+            })
+    except RegistroJuridico.DoesNotExist:
+        return JsonResponse({"error": "Registro no encontrado."}, status=404)
