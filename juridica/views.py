@@ -2,6 +2,12 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import *
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
+from datetime import date, datetime
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+import smtplib
+from .function import enviar_correo_smtp
+from django.contrib import messages
 
 def lista_registros(request):
     query = request.GET.get("q")
@@ -104,13 +110,58 @@ def editar_registro(request, id):
         "registro": registro
         # no hace falta pasar documentos, se acceden como registro.documentos.all
     })
+
+
 @csrf_exempt
 def reiterar_oficio(request, id):
+    registro = get_object_or_404(RegistroJuridico, id=id)
+    
+    if request.method == "POST":
+        try:
+            with transaction.atomic():
+                print( "Procesando formulario de reiterar_oficio..." )
+                usuario = request.POST.get("usuario", "").strip()
+                contraseña = request.POST.get("contraseña", "").strip()
+                dirigido = request.POST.get("dirigido", "").strip()
+                copia = request.POST.get("copia", "").strip()
+                respuesta = request.POST.get("respuesta", "").strip()
 
-    return render(request, "reiterar.html",)
+                archivos = request.FILES.getlist("archivos")
+
+                destinatarios = [e.strip() for e in dirigido.split(",") if e.strip()]
+                cc = [e.strip() for e in copia.split(",") if e.strip()] if copia else []
+
+                enviar_correo_smtp(
+                    usuario=usuario,
+                    contraseña=contraseña,
+                    asunto="Respuesta a Oficio Jurídico",
+                    cuerpo=respuesta,
+                    destinatarios=destinatarios,
+                    cc=cc,
+                    archivos=archivos
+                )
+
+                return redirect("lista_registros")
+
+        except Exception as e:
+            messages.error(request, f"Error al enviar correo: {e}")
+            return redirect("lista_registros")
+
+    
+    return render(request, "reiterar.html", {"registro": registro})
 
 @csrf_exempt
 def eliminar_registro(request, id):
     registro = get_object_or_404(RegistroJuridico, id=id)
     registro.delete()
     return redirect("lista_registros")
+
+@csrf_exempt
+def login(request):
+    print("Login view accessed")
+    if request.method == "POST":
+        print("Login view accessed")
+
+        return redirect("lista_registros")
+
+    return render(request, "login.html")

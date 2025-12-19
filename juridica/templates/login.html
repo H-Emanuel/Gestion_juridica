@@ -1,0 +1,64 @@
+
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/login.css' %}" />
+
+  <!-- Enlace a Google Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+  <style ></style>
+  <div class="logo-container">
+    <img src="https://departamentosig.munivalpo.cl/media/assets/imagen_sig/None/adjunto_LDrT6z1.png" alt="logo SECPLA" class="logo2" />
+    <img src="https://departamentosig.munivalpo.cl/media/assets/imagen_sig/None/adjunto_U8p5946.png" alt="logo Valparaiso" class="logo"/>
+  </div>
+
+<body>
+  <div class="container">
+    <h1>Asesoría Jurídica</h1>
+    
+  
+    <div class="wrapper">
+        
+
+      <form action="{% url 'login' %}" method="POST" >
+        {% csrf_token %}
+        <h2>Iniciar Sesión </h2>
+        <div class="input-field">
+          <input type="text" id="email" name="email" required autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+          <label>Usuario</label>
+        </div>
+        <div class="input-field">
+          <input type="password" id="password" name="password" required autocomplete="off" readonly onfocus="this.removeAttribute('readonly');">
+          <label>Contraseña</label>
+        </div>
+    
+        <button type="submit">Ingresar</button>
+        
+      </form>
+    </div>
+    <br>
+  
+    <br>
+    <!-- {% if messages %}
+    <div class="wrapper-error">
+      <div class="alert alert-danger">
+        {% for message in messages %}
+          {{ message }}
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %} -->
+  </div>
+  <div class="container-footer">
+    <footer>
+        <p>
+          <span class="material-icons" style="font-size: 20px; vertical-align:text-bottom; margin-right: 2px; color: rgba(255, 255, 255, 0.733);">verified</span> <!-- Aquí usamos un ícono de Google Material Icons -->
+          Desarrollado por el Departamento SIG, según la estructura diseñada por Asesoría Jurídica. 
+        </p>
+  </footer>
+  </div>
+</body>
+

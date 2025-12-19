@@ -1,107 +1,241 @@
 $(document).ready(function () {
 
-    // Placeholder del buscador
-    setTimeout(function () {
-        $('.dataTables_filter input').attr(
-            'placeholder',
-            'folio, oficio o materia'
-        );
-    }, 500);
-
-let table = $('#registrosTable').DataTable({
+  // =========================
+  // Pendientes (activos)
+  // =========================
+  const tablePendientes = $('#registrosTable').DataTable({
     dom: 'frtip',
     language: { url: "/static/js/es-MX.json" },
     processing: true,
     serverSide: true,
-    ajax: {
-        url: "/api/registros/",
-        type: "GET",
-    },
+    ajax: { url: "/api/registros/", type: "GET" },
     pageLength: 6,
     order: [[0, "desc"]],
     columns: [
-        { data: "folio" },            // 0
-        { data: "oficio" },           // 1
-        {
-            data: "materia",          // 2
-            render: function (data, type, row) {
-                if (!data) return "";
-                if (type !== 'display') return data;
-                return data.length > 40 ? data.substring(0, 40) + "..." : data;
-            }
-        },
-        { data: "fecha_oficio" },     // 3
-        { data: "fecha_respuesta" },  // 4
-        {
-            data: "dias_transcurridos", // 5
-            render: function (data, type, row) {
-                if (type !== 'display') return data;
-                if (!data && data !== 0) return "—";
-                let clase = (data >= 3) ? "bg-success" : "bg-danger";
-                return `<span class="badge ${clase}">${data} días</span>`;
-            }
-        },
-        {
-            data: null,               
-            orderable: false,
-            searchable: false,
-            render: function (data, type, row) {
-                if (type !== 'display') return null;
-                return `
-                    <a href="/eliminar/${row.id}/" class="btn btn-rojo btn-tooltip" title="Eliminar oficio jurídico" onclick="return confirm('¿Eliminar registro?')">❌​</a>
-                    <a href="/editar/${row.id}/" class="btn btn-naranja btn-tooltip" title="Editar oficio jurídico">✏️​</a>
-                    <a href="/reiterar_oficio/${row.id}/" class="btn btn-azul btn-tooltip" title="Reiterar oficio jurídico">🕑​</a>
-                    <a href="/reiterar_oficio/${row.id}/" class="btn btn-verde btn-tooltip" title=" oficio jurídico">✔️​​</a>
-                `;
-            }
+      { data: "folio" },
+      { data: "oficio" },
+      {
+        data: "materia",
+        render: function (data, type) {
+          if (!data) return "";
+          if (type !== 'display') return data;
+          return data.length > 40 ? data.substring(0, 40) + "..." : data;
         }
+      },
+      { data: "fecha_oficio" },
+      { data: "fecha_respuesta" },
+      {
+        data: "dias_transcurridos",
+        render: function (data, type) {
+          if (type !== 'display') return data;
+          if (data === null || data === undefined || data === "") return "—";
+          const clase = (data >= 3) ? "bg-success" : "bg-danger";
+          return `<span class="badge ${clase}">${data} días</span>`;
+        }
+      },
+      {
+        data: null,
+        orderable: false,
+        searchable: false,
+        render: function (data, type, row) {
+          if (type !== 'display') return null;
+          return `
+            <a href="/eliminar/${row.id}/" class="btn btn-rojo btn-tooltip" title="Eliminar" onclick="return confirm('¿Eliminar registro?')">❌</a>
+            <a href="/editar/${row.id}/" class="btn btn-naranja btn-tooltip" title="Editar">✏️</a>
+            <a href="/reiterar_oficio/${row.id}/" class="btn btn-azul btn-tooltip" title="Reiterar">🕑</a>
+            <a href="#" data-id="${row.id}" class="btn btn-verde btn-tooltip btn-respondido" title="Terminar">✔️</a>
+            <a href="#" data-id="${row.id}" class="btn btn-gris btn-tooltip btn-detalle" title="Detalle">📋</a>
+          `;
+        }
+      }
     ],
-    columnDefs: [
-        { orderable: false, targets: [6] }  // solo acciones
-    ]
-});
+    columnDefs: [{ orderable: false, targets: [6] }],
+    initComplete: function () {
+      setTimeout(function () {
+        $('#registrosTable_filter input').attr('placeholder', 'folio, oficio o materia');
+      }, 50);
+    }
+  });
 
-    // === Resaltado de búsqueda (oficio y materia) ===
+  // =========================
+  // Histórico (terminados)
+  // =========================
+  const tableHistorico = $('#historicoTable').DataTable({
+    dom: 'frtip',
+    language: { url: "/static/js/es-MX.json" },
+    processing: true,
+    serverSide: true,
+    ajax: { url: "/api/historico/", type: "GET" }, // ✅ tu ruta real
+    pageLength: 6,
+    order: [[4, "desc"]], // fecha_respuesta desc (si viene)
+    columns: [
+      { data: "folio" },
+      { data: "oficio" },
+      {
+        data: "materia",
+        render: function (data, type) {
+          if (!data) return "";
+          if (type !== 'display') return data;
+          return data.length > 40 ? data.substring(0, 40) + "..." : data;
+        }
+      },
+      { data: "fecha_oficio" },
+      { data: "fecha_respuesta" }
+    ],
+    initComplete: function () {
+      setTimeout(function () {
+        $('#historicoTable_filter input').attr('placeholder', 'folio, oficio o materia');
+      }, 50);
+    }
+  });
+
+
+  // =========================
+  // Toggle entre tablas
+  // =========================
+  $('#tablaSelector').on('change', function () {
+    const val = $(this).val();
+
+    if (val === 'pendientes') {
+        $('#wrapHistorico').addClass('d-none');
+        $('#wrapPendientes').removeClass('d-none');
+
+        tablePendientes.columns.adjust().draw(false);
+        highlightPendientes(); // ✅ fuerza highlight en la visible
+    } else {
+        $('#wrapPendientes').addClass('d-none');
+        $('#wrapHistorico').removeClass('d-none');
+
+        tableHistorico.columns.adjust().draw(false);
+        highlightHistorico(); // ✅ fuerza highlight en la visible
+    }
+    });
+
+  // =========================
+    // Highlight genérico para cualquier DataTable
+    // =========================
+    function setupHighlight(tableInstance, tableId, highlightColumns) {
+    const filterSelector = `#${tableId}_filter input`;
+    const tbodySelector  = `#${tableId} tbody`;
 
     function highlightSearch() {
-        let searchText = $('.dataTables_filter input').val().trim().toLowerCase();
+        const searchText = ($(filterSelector).val() || '').trim().toLowerCase();
 
-        if (searchText.length === 0) {
-            $('#registrosTable tbody td').removeClass('highlight-cell');
-            return;
+        if (!searchText) {
+        $(`${tbodySelector} td`).removeClass('highlight-cell');
+        return;
         }
 
-        const highlightColumns = [0, 1,2]; // los índices que quieres revisar
+        $(`${tbodySelector} tr`).each(function () {
+        const cells = $(this).find('td');
 
-        $('#registrosTable tbody tr').each(function () {
-            let cells = $(this).find('td');
+        highlightColumns.forEach(function (index) {
+            const cell = cells.eq(index);
+            const text = cell.text().toLowerCase();
 
-            highlightColumns.forEach(function(index) {
-                let cell = cells.eq(index);
-                let text = cell.text().toLowerCase();
-
-                if (text.includes(searchText)) {
-                    cell.addClass('highlight-cell');
-                } else {
-                    cell.removeClass('highlight-cell');
-                }
-            });
+            if (text.includes(searchText)) cell.addClass('highlight-cell');
+            else cell.removeClass('highlight-cell');
+        });
         });
     }
 
-
-    $('.dataTables_filter input').on('keyup', function () {
-        setTimeout(highlightSearch, 200);
+    // al escribir en el buscador de ESA tabla
+    $(document).on('keyup', filterSelector, function () {
+        setTimeout(highlightSearch, 150);
     });
 
-    table.on('draw.dt', function () {
+    // al redibujar ESA tabla (paginación, orden, ajax)
+    tableInstance.on('draw.dt', function () {
         highlightSearch();
     });
 
-    // Estilo para celdas resaltadas
+    // devuelve la función para poder invocarla cuando cambies de tabla
+    return highlightSearch;
+    }
+
+    // CSS (una vez)
     $('<style>')
-        .prop('type', 'text/css')
-        .html('.highlight-cell { background-color: #50d6ff7e !important; font-weight: bold !important; }')
-        .appendTo('head');
+    .prop('type', 'text/css')
+    .html('.highlight-cell { background-color: #b7e4c7 !important; font-weight: bold !important; }')
+    .appendTo('head');
+
+    // Activar highlight para cada tabla (elige columnas)
+    const highlightPendientes = setupHighlight(tablePendientes, 'registrosTable', [0, 1, 2]); // folio, oficio, materia
+    const highlightHistorico  = setupHighlight(tableHistorico,  'historicoTable', [0, 1, 2]); // folio, oficio, materia
+
+
+  // =========================
+  // Al terminar oficio: recarga pendientes y (opcional) histórico
+  // =========================
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  $('#registrosTable').on('click', '.btn-respondido', function (e) {
+    e.preventDefault();
+
+    const $btn = $(this);
+    const id = $btn.data('id');
+
+    if (!confirm('¿Marcar este oficio como respondido?')) return;
+
+    $.ajax({
+      url: '/api/respondido/' + id + '/',
+      type: 'POST',
+      headers: { 'X-CSRFToken': csrftoken },
+      success: function () {
+        tablePendientes.ajax.reload(null, false);
+        // 🔥 como ahora pasa al histórico, recargamos también
+        tableHistorico.ajax.reload(null, false);
+      },
+      error: function (xhr) {
+        console.error(xhr.responseText || xhr.statusText);
+        alert('Ocurrió un error al marcar como respondido.');
+      }
+    });
+  });
+
+  // =========================
+// Resaltado de búsqueda
+// =========================
+function highlightSearch() {
+    const searchText = $('#registrosTable_filter input').val().trim().toLowerCase();
+
+    if (!searchText) {
+        $('#registrosTable tbody td').removeClass('highlight-cell');
+        return;
+    }
+
+    const highlightColumns = [0, 1, 2]; // folio, oficio, materia
+
+    $('#registrosTable tbody tr').each(function () {
+        const cells = $(this).find('td');
+
+        highlightColumns.forEach(function (index) {
+            const cell = cells.eq(index);
+            const text = cell.text().toLowerCase();
+
+            if (text.includes(searchText)) {
+                cell.addClass('highlight-cell');
+            } else {
+                cell.removeClass('highlight-cell');
+            }
+        });
+    });
+}
+
+
 
 });

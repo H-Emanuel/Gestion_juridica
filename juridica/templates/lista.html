@@ -3,31 +3,55 @@
     {% load static %}
 
 
-
 <div class="card p-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-0">📄 Registros Jurídicos</h3>
-        <a href="/crear/" class="btn btn-primary">+ Nuevo Registro</a>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="mb-0">📄 Registros Jurídicos</h3>
+
+    <div class="d-flex gap-2 align-items-center">
+      <select id="tablaSelector" class="form-select form-select-sm" style="width:auto;">
+        <option value="pendientes" selected>En Cursor</option>
+        <option value="historico">Histórico (Terminados)</option>
+      </select>
+
+      <a href="/crear/" class="btn btn-primary btn-sm">+ Nuevo Registro</a>
     </div>
+  </div>
 
-    <table id="registrosTable" class="table table-hover table-bordered align-middle">
-    <thead>
+  <!-- Pendientes -->
+  <div id="wrapPendientes">
+    <table id="registrosTable" class="table table-hover table-bordered align-middle w-100">
+      <thead>
         <tr>
-            <th>Folio</th>
-            <th>N° Oficio CGR</th>
-            <th>Materia</th>
-            <th>Fecha Oficio</th>
-            <th>Fecha Respuesta</th>
-            <th>Días transcurridos</th>
-            <th>Acciones</th>
+          <th>Folio</th>
+          <th>Oficio o Derivacion</th>
+          <th>Departamento/s</th>
+          <th>Fecha Oficio</th>
+          <th>Fecha Respuesta</th>
+          <th>Días transcurridos</th>
+          <th>Acciones</th>
         </tr>
-    </thead>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-    <tbody>
-        
-    </tbody>
-</table>
+  <!-- Histórico -->
+  <div id="wrapHistorico" class="d-none">
+    <table id="historicoTable" class="table table-hover table-bordered align-middle w-100">
+      <thead>
+        <tr>
+          <th>Folio</th>
+          <th>Oficio o Derivacion</th>
+          <th>Departamento/s</th>
+          <th>Fecha Oficio</th>
+          <th>Fecha Respuesta</th>
+          <th>Acciones</th>
 
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <script src="{% static 'js/tabla.js' %}"></script>

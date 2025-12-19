@@ -109,7 +109,7 @@
 <body>
 
 <div class="container">
-    <h2>📄 Registrar Oficio Jurídico</h2>
+    <h2>📄 Registrar Oficio </h2>
 
     <form method="POST" id="form-oficio" enctype="multipart/form-data">
         {% csrf_token %}
@@ -122,7 +122,7 @@
             </div>
 
             <div class="col">
-                <label>N° Oficio</label>
+                <label>N° Oficio o Providecia Derivacion</label>
                 <input class="small-box" type="text" name="oficio" required>
             </div>
         </div>
@@ -132,6 +132,13 @@
             <div class="col" style="width: 100%;">
                 <label>Materia</label>
                 <textarea name="materia" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></textarea>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 20px;">
+            <div class="col" style="width: 100%;">
+                <label>Departamento/s</label>
+                <textarea name="departamento" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></textarea>
             </div>
         </div>
 

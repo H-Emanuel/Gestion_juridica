@@ -70,3 +70,9 @@
     --border: #ff7a00;
     --tooltip-bg: #b25400;
 }
+
+.btn-gris {
+    --color: #535353;
+    --border: #535353;
+    --tooltip-bg: #393939;
+}
