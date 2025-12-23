@@ -9,7 +9,7 @@
 
     <div class="d-flex gap-2 align-items-center">
       <select id="tablaSelector" class="form-select form-select-sm" style="width:auto;">
-        <option value="pendientes" selected>En Cursor</option>
+        <option value="pendientes" selected>En Curso</option>
         <option value="historico">Histórico (Terminados)</option>
       </select>
 
@@ -53,6 +53,12 @@
     </table>
   </div>
 </div>
+
+{% block content %}
+        {% include 'modal/modal.html' %}
+{% endblock %}
+
+
 
 <script src="{% static 'js/tabla.js' %}"></script>
 

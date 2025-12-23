@@ -1,0 +1,91 @@
+{% block modal_conte%}
+<div class="modal fade" id="miModalResponder" tabindex="-1" role="dialog" aria-labelledby="miModalResponderLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="miModalResponderLabel">Responder</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="cerrarModal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="formResponder">
+                    <div class="form-group">
+                        <label for="respuesta">Tu Respuesta</label>
+                        <textarea class="form-control" id="respuesta" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="archivo">Adjuntar Archivo</label>
+                        <input type="file" class="form-control-file" id="archivo" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="cerrarModal()">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="enviarRespuesta()">Enviar Respuesta</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function cerrarModal() {
+    $('#miModalResponder').modal('hide');
+    document.getElementById('formResponder').reset();
+}
+
+function enviarRespuesta() {
+    var respuesta = document.getElementById('respuesta').value;
+    var archivo = document.getElementById('archivo').files[0];
+    var registroId = $('#miModalResponder').data('registro-id');
+    
+    if (respuesta.trim() === '') {
+        alert('Por favor escribe una respuesta');
+        return;
+    }
+    
+    if (!archivo) {
+        alert('Por favor selecciona un archivo');
+        return;
+    }
+    
+    var formData = new FormData();
+    formData.append('respuesta', respuesta);
+    formData.append('archivo', archivo);
+    
+    fetch(`api/respondido/${registroId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Respuesta enviada correctamente');
+        cerrarModal();
+        tablePendientes.ajax.reload(null, false);
+        // 🔥 como ahora pasa al histórico, recargamos también
+        tableHistorico.ajax.reload(null, false);
+        document.getElementById('formResponder').reset();
+
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

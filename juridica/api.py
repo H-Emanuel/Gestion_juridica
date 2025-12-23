@@ -176,15 +176,23 @@ def RegistroJuridico_terminado_list(request):
 
 @csrf_exempt
 def oficio_respodido(request, id):
-    
     try:
         registro = RegistroJuridico.objects.get(id=id)
         registro.terminado = True
         registro.save()
+
+        respuesta_text = request.POST.get("respuesta", "")
+        archivo = request.FILES.get("archivo")
+
+        RespuestaJuridica.objects.create(
+            registro=registro,
+            respuesta=respuesta_text,
+            fecha_termino=date.today(),
+            archivo=archivo
+        )
         return JsonResponse({
                 "folio": registro.folio,
                 "oficio": registro.oficio,
-
             })
     except RegistroJuridico.DoesNotExist:
         return JsonResponse({"error": "Registro no encontrado."}, status=404)

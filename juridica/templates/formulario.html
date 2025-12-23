@@ -1,22 +1,9 @@
-{% load static %}
+{% extends "base.html" %}
+{% block contenido %}
+    {% load static %}
 
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Nuevo Registro Jurídico</title>
-    <link href="{% static 'css/btn.css' %}" rel="stylesheet">
-
-    <style>
-        body {
-            font-family: "Segoe UI", Tahoma, sans-serif;
-            background: #e9eef5;
-            padding: 40px 0;
-            margin: 0;
-        }
-
-        .container {
+<style>
+    .container {
             width: 60%;
             max-width: 900px;
             background: white;
@@ -26,40 +13,6 @@
             box-shadow: 0 8px 25px rgba(0,0,0,0.12);
         }
 
-        h2 {
-            text-align: center;
-            margin-bottom: 25px;
-            color: #003366;
-            font-weight: bold;
-        }
-
-        label {
-            font-weight: 600;
-            color: #003366;
-            margin-bottom: 4px;
-        }
-
-        /* CAMPOS DE 3 CM */
-        .small-box {
-            width: 110px; /* ≈3 centímetros */
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            background: #f9fafc;
-        }
-
-        textarea, input[type="text"], input[type="date"] {
-            transition: all 0.2s ease-in-out;
-        }
-
-        input:focus, textarea:focus {
-            border-color: #005bc5;
-            background: white;
-            box-shadow: 0 0 8px rgba(0, 91, 197, 0.3);
-            outline: none;
-        }
-
-        /* ORGANIZACIÓN EN FILAS */
         .row {
             display: flex;
             align-items: flex-start;
@@ -72,42 +25,14 @@
             flex-direction: column;
         }
 
-        /* BOTÓN PEQUEÑO CON ICONO */
-        .btn-icon {
-            margin-top: 25px;
-            padding: 10px;
-            width: 45px;
-            height: 45px;
-            font-size: 20px;
-            background: #005bc5;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: 0.2s;
+        .col-center {
             display: flex;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            flex: 1;
         }
-
-        .btn-icon:hover {
-            background: #003f8a;
-        }
-
-        a {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            text-decoration: none;
-            font-weight: bold;
-            color: #005bc5;
-        }
-
-
-    </style>
-</head>
-<body>
-
+</style>
+    
 <div class="container">
     <h2>📄 Registrar Oficio </h2>
 
@@ -135,13 +60,6 @@
             </div>
         </div>
 
-        <div class="row" style="margin-top: 20px;">
-            <div class="col" style="width: 100%;">
-                <label>Departamento/s</label>
-                <textarea name="departamento" rows="3" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"></textarea>
-            </div>
-        </div>
-
         <!-- FILA 2: FECHAS -->
         <div class="row">
             <div class="col">
@@ -155,33 +73,74 @@
             </div>
         </div>
         <!-- ASIGNACIÓN -->
-        <div class="row" style="margin-top: 20px;">
-            <div class="col" style="width: 100%;">
-            <label>Asignación</label>
-            <select name="asignacion" id="asignacion" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;">
-                <option value="">-- Seleccionar --</option>
-                <option value="Administración Municipal">Administración Municipal</option>
-                <option value="Alcaldía">Alcaldía</option>
-                <option value="Delegación territorial">Delegación territorial</option>
-                <option value="Dirección de Administración y Finanzas">Dirección de Administración y Finanzas</option>
-                <option value="Dirección de Asesoría Jurídica">Dirección de Asesoría Jurídica</option>
-                <option value="Dirección de Desarrollo Comunitario">Dirección de Desarrollo Comunitario</option>
-                <option value="Dirección de Desarrollo Cultural">Dirección de Desarrollo Cultural</option>
-                <option value="Dirección de Género, Mujeres y Diversidades">Dirección de Género, Mujeres y Diversidades</option>
-                <option value="Dirección de Medioambiente">Dirección de Medioambiente</option>
-                <option value="Dirección de Obras Municipales">Dirección de Obras Municipales</option>
-                <option value="Dirección de Operaciones">Dirección de Operaciones</option>
-                <option value="Dirección de Seguridad Ciudadana">Dirección de Seguridad Ciudadana</option>
-                <option value="Dirección de Tránsito y Transporte públicos">Dirección de Tránsito y Transporte públicos</option>
-                <option value="Dirección de Vivienda, Barrio y Territorio">Dirección de Vivienda, Barrio y Territorio</option>
-                <option value="Dirección desarrollo Económico y Cooperación Internacional">Dirección desarrollo Económico y Cooperación Internacional</option>
-                <option value="Gabinete">Gabinete</option>
-                <option value="Juzgados">Juzgados</option>
-                <option value="SECPLA">SECPLA</option>
-                <option value="otro">Otro</option>
-            </select>
+        <div class="row" style="margin-top:20px;">
+            <div class="col" style="width:100%;">
+                <label style="display:block; margin-bottom:6px;">Asignación</label>
+
+                <input type="text" id="asignacion_search" placeholder="Buscar dirección..."
+                style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; margin-bottom:10px;" />
+
+                <div id="asignacion_list"
+                style="border:1px solid #ccc; border-radius:6px; padding:10px; max-height:220px; overflow:auto;">
+
+                {% for item in asignaciones %}
+                    {% if item != "Otro" %}
+                    <label style="display:flex; gap:8px; align-items:center; margin:6px 0;">
+                        <input type="checkbox" name="asignacion[]" value="{{ item|escape }}">
+                        {{ item }}
+                    </label>
+                    {% endif %}
+                {% endfor %}
+
+                <label style="display:flex; gap:8px; align-items:center; margin:6px 0;">
+                    <input type="checkbox" id="asig_otro_chk" name="asignacion[]" value="Otro">
+                    Otro
+                </label>
+
+                <div id="asig_otro_wrap" style="display:none; margin-top:8px;">
+                    <input type="text" id="asig_otro_txt" name="asignacion_otro" placeholder="Especifica cuál..."
+                    style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" />
+                </div>
+
+                </div>
             </div>
         </div>
+
+
+            <script>
+            (function () {
+                const search = document.getElementById("asignacion_search");
+                const list = document.getElementById("asignacion_list");
+                const items = Array.from(list.querySelectorAll("label")).filter(l => l.querySelector('input[type="checkbox"]'));
+                const otroChk = document.getElementById("asig_otro_chk");
+                const otroWrap = document.getElementById("asig_otro_wrap");
+                const otroTxt = document.getElementById("asig_otro_txt");
+
+                // Buscar
+                search.addEventListener("input", () => {
+                const q = search.value.trim().toLowerCase();
+                items.forEach(label => {
+                    const text = label.textContent.trim().toLowerCase();
+                    label.style.display = text.includes(q) ? "flex" : "none";
+                });
+                // Mantener visible el input de "Otro" si está marcado
+                if (otroChk && otroChk.checked) otroWrap.style.display = "block";
+                });
+
+                // "Otro" -> mostrar input
+                if (otroChk) {
+                const toggleOtro = () => {
+                    const on = otroChk.checked;
+                    otroWrap.style.display = on ? "block" : "none";
+                    otroTxt.required = on;
+                    if (!on) otroTxt.value = "";
+                };
+                otroChk.addEventListener("change", toggleOtro);
+                toggleOtro();
+                }
+            })();
+            </script>
+
 
         <div class="row" style="margin-top: 15px; display: none;" id="otro-departamento-row">
             <div class="col" style="width: 100%;">
@@ -214,10 +173,23 @@
 
         <!-- BOTÓN ICONO -->        
 
-        <button class="btn btn-azul btn-tooltip" type="submit" title="Guardar el oficio jurídico" style="position: relative;">💾</button>
 
     
     </form>
+
+        <div class="row">
+            <div class="col-center">
+                <a class="btn btn-azul btn-tooltip" title="Volver a la Lista" href="/">⬅</a>
+            </div>
+
+            <div class="col-center">
+                <button class="btn btn-azul btn-tooltip" type="submit" title="Guardar el oficio jurídico" style="position: relative;">💾</button>
+            </div>
+        </div>
+
+    </div>
+
+<br>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
     const dropArea   = document.getElementById('drop-area');
@@ -261,8 +233,8 @@
                     <strong>${file.name}</strong><br>
                     <small class="text-muted">${bytesToSize(file.size)}</small>
                 </div>
-                <button type="button" class="btn btn-azul" data-index="${index}">
-                    Quitar
+                <button type="button" class="btn btn-rojo btn-tooltip" title="Quitar" data-index="${index}">
+                    ​❌
                 </button>
             `;
 
@@ -452,11 +424,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 });
-</script>
+  </script>
 
 
-    <a href="/">⬅ Volver a la Lista</a>
-</div>
-
-</body>
-</html>
+{% endblock %}

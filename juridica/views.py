@@ -19,6 +19,28 @@ def lista_registros(request):
 
     return render(request, "lista.html", {"registros": registros})
 
+ASIGNACIONES = [
+    "Administración Municipal",
+    "Alcaldía",
+    "Delegación territorial",
+    "Dirección de Administración y Finanzas",
+    "Dirección de Asesoría Jurídica",
+    "Dirección de Desarrollo Comunitario",
+    "Dirección de Desarrollo Cultural",
+    "Dirección de Género, Mujeres y Diversidades",
+    "Dirección de Medioambiente",
+    "Dirección de Obras Municipales",
+    "Dirección de Operaciones",
+    "Dirección de Seguridad Ciudadana",
+    "Dirección de Tránsito y Transporte públicos",
+    "Dirección de Vivienda, Barrio y Territorio",
+    "Dirección desarrollo Económico y Cooperación Internacional",
+    "Gabinete",
+    "Juzgados",
+    "SECPLA",
+    "Otro",
+]
+
 @csrf_exempt
 def crear_registro(request):
     if request.method == "POST":
@@ -26,9 +48,6 @@ def crear_registro(request):
             with transaction.atomic():
                 # 1) Crear el registro jurídico
                 # Determinar el valor de asignacion
-                asignacion = request.POST.get("asignacion", "").strip()
-                if asignacion == "otro":
-                    asignacion = request.POST.get("otro_departamento", "").strip()
                 
                 registro = RegistroJuridico.objects.create(
                     folio=request.POST.get("folio", "").strip(),
@@ -36,8 +55,18 @@ def crear_registro(request):
                     materia=request.POST.get("materia", "").strip(),
                     fecha_oficio=request.POST.get("fecha_oficio"),
                     fecha_respuesta=request.POST.get("fecha_respuesta") or None,
-                    asignacion=asignacion,
                 )
+
+                asignaciones = request.POST.getlist("asignacion[]")
+                otro = request.POST.get("asignacion_otro", "").strip()
+
+                if otro:
+                    asignaciones.append(otro)
+
+                registro.asignaciones = asignaciones
+                registro.save()
+
+
 
                 # 2) Obtener TODOS los archivos enviados en "archivos"
                 archivos = request.FILES.getlist("archivos")
@@ -61,7 +90,9 @@ def crear_registro(request):
                 "error": "Ocurrió un problema al guardar el registro."
             })
 
-    return render(request, "formulario.html")
+    return render(request, "formulario.html", {
+            "asignaciones": ASIGNACIONES
+        })
 
 @csrf_exempt
 def editar_registro(request, id):

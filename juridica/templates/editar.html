@@ -1,102 +1,33 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Editar Registro Jurídico</title>
 
-</head>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<body>
-    <style>
-    .form-card {
-        max-width: 900px;
-        margin: 30px auto;
-        background: #ffffff;
-        border-radius: 10px;
-        padding: 24px 28px;
-        box-shadow: 0 8px 18px rgba(0,0,0,0.06);
-    }
+{% extends "base.html" %}
+{% block contenido %}
+    {% load static %}
 
-    .form-card h2 {
-        font-size: 1.6rem;
-        margin-bottom: 0.75rem;
-    }
 
-    .form-subtitle {
-        color: #6c757d;
-        font-size: 0.9rem;
-        margin-bottom: 1.5rem;
-    }
+<style>
+    .container {
+            width: 60%;
+            max-width: 900px;
+            background: white;
+            margin: auto;
+            padding: 35px;
+            border-radius: 14px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        }
 
-    /* separador de secciones */
-    .form-section-title {
-        font-size: 1rem;
-        font-weight: 600;
-        margin-top: 1.5rem;
-        margin-bottom: 0.75rem;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
+        .row {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-top: 15px;
+        }
 
-    .form-section-title::before {
-        content: "";
-        width: 4px;
-        height: 18px;
-        border-radius: 999px;
-        background: #005bc5;
-    }
-
-    /* espaciar campos */
-    .form-group {
-        margin-bottom: 1rem;
-    }
-
-    /* documentos */
-    .doc-list-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .doc-info a {
-        font-weight: 500;
-        text-decoration: none;
-    }
-
-    .doc-info a:hover {
-        text-decoration: underline;
-    }
-
-    /* drop area */
-    #drop-area {
-        background: #f9fafb;
-        cursor: pointer;
-        transition: background-color .2s ease, border-color .2s ease, transform .15s ease;
-    }
-
-    #drop-area.dragover {
-        background: #e6f0ff;
-        border-color: #005bc5 !important;
-        transform: scale(1.01);
-    }
-
-    /* lista de archivos nuevos */
-    #file-list li {
-        font-size: 0.9rem;
-    }
-
-    /* botones inferiores */
-    .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-        margin-top: 1.5rem;
-    }
-
-    </style>
-
+        .col {
+            display: flex;
+            flex-direction: column;
+        }
+        
+</style>
 <div class="container">
 
     <h2 class="text-center">Editar Registro Jurídico</h2>
@@ -104,14 +35,18 @@
     <form method="POST" enctype="multipart/form-data" class="form-horizontal">
         {% csrf_token %}
 
-        <div class="form-group">
-            <label for="folio">Folio</label>
-            <input type="text" id="folio" name="folio" class="form-control" value="{{ registro.folio }}" required>
-        </div>
 
-        <div class="form-group">
-            <label for="oficio">Oficio</label>
-            <input type="text" id="oficio" name="oficio" class="form-control" value="{{ registro.oficio }}" required>
+        <div class="row">
+            <div class="col">
+                <label for="folio">Folio</label>
+                <input type="text" id="folio" name="folio" class="form-control" value="{{ registro.folio }}" required>
+            </div>
+
+            <div class="col">
+                <label for="oficio">Oficio</label>
+                <input type="text" id="oficio" name="oficio" class="form-control" value="{{ registro.oficio }}" required>
+            </div>
+
         </div>
 
         <div class="form-group">
@@ -127,11 +62,6 @@
         <div class="form-group">
             <label for="fecha_respuesta">Fecha Respuesta</label>
             <input type="date" id="fecha_respuesta" name="fecha_respuesta" class="form-control" value="{{ registro.fecha_respuesta|date:'Y-m-d' }}" required>
-        </div>
-
-        <div class="form-group">
-            <label for="respuesta">Respuesta</label>
-            <textarea id="respuesta" name="respuesta" class="form-control" rows="3" required>{{ registro.respuesta }}</textarea>
         </div>
 
         <div class="form-group">
@@ -214,14 +144,18 @@
                 <input id="file-input" type="file" name="archivos" multiple class="d-none" />
             </div>
             <ul id="file-list" class="list-group mt-3"></ul>  
-</div>
 
-        <button type="submit" class="btn btn-primary mt-3">Guardar Cambios</button>
+
+        <button type="submit" title="Enviar" class="btn btn-azul btn-tooltip">​💾​</button>
     </form>
     <br>
-    <a href="/">Volver</a>
+    <a class="btn btn-rojo btn-tooltip" title="Cancelar" href="/">​❌ </a>
+</div>
 
-        <script>
+<br>
+<br>
+
+<script>
             document.getElementById('asignacion').addEventListener('change', function() {
             const otroDeptRow = document.getElementById('otro-departamento-row');
             if (this.value === 'otro') {
@@ -232,7 +166,7 @@
                 document.getElementById('otro_departamento').required = false;
             }
             });
-        </script>
+</script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -364,7 +298,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
-</div>
-
-</body>
-</html>
+{% endblock %}

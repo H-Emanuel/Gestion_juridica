@@ -189,22 +189,13 @@ $(document).ready(function () {
     const $btn = $(this);
     const id = $btn.data('id');
 
-    if (!confirm('¿Marcar este oficio como respondido?')) return;
+    // Abre el modal (cambia #miModalResponder por tu ID real)
+    $('#miModalResponder').modal('show');
+    
+    // Guarda el ID en el modal para usarlo después
+    $('#miModalResponder').data('registro-id', id);
 
-    $.ajax({
-      url: '/api/respondido/' + id + '/',
-      type: 'POST',
-      headers: { 'X-CSRFToken': csrftoken },
-      success: function () {
-        tablePendientes.ajax.reload(null, false);
-        // 🔥 como ahora pasa al histórico, recargamos también
-        tableHistorico.ajax.reload(null, false);
-      },
-      error: function (xhr) {
-        console.error(xhr.responseText || xhr.statusText);
-        alert('Ocurrió un error al marcar como respondido.');
-      }
-    });
+    
   });
 
   // =========================
