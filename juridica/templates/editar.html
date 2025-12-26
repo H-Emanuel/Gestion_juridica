@@ -1,301 +1,468 @@
 
 {% extends "base.html" %}
 {% block contenido %}
-    {% load static %}
+{% load static %}
 
 
 <style>
-    .container {
-            width: 60%;
-            max-width: 900px;
-            background: white;
-            margin: auto;
-            padding: 35px;
-            border-radius: 14px;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
-        }
+  .container {
+    width: 60%;
+    max-width: 900px;
+    background: white;
+    margin: auto;
+    padding: 35px;
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+  }
 
-        .row {
-            display: flex;
-            align-items: flex-start;
-            gap: 15px;
-            margin-top: 15px;
-        }
+  .row {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    margin-top: 15px;
+  }
 
-        .col {
-            display: flex;
-            flex-direction: column;
-        }
-        
+  .col {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .col-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+  }
+
+  .small-box{
+    width: 260px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
 </style>
+
 <div class="container">
+  <h2>✏️ Editar Oficio</h2>
 
-    <h2 class="text-center">Editar Registro Jurídico</h2>
+  <form method="POST" id="form-oficio" enctype="multipart/form-data">
+    {% csrf_token %}
 
-    <form method="POST" enctype="multipart/form-data" class="form-horizontal">
-        {% csrf_token %}
+    <!-- FILA 1: Folio y N° Oficio -->
+    <div class="row">
+      <div class="col">
+        <label>Folio</label>
+        <input class="small-box" type="text" name="folio" required value="{{ registro.folio }}">
+      </div>
 
+      <div class="col">
+        <label>N° Oficio o Providencia Derivación</label>
+        <input class="small-box" type="text" name="oficio" required value="{{ registro.oficio }}">
+      </div>
+    </div>
 
-        <div class="row">
-            <div class="col">
-                <label for="folio">Folio</label>
-                <input type="text" id="folio" name="folio" class="form-control" value="{{ registro.folio }}" required>
-            </div>
+    <!-- MATERIA -->
+    <div class="row" style="margin-top: 20px;">
+      <div class="col" style="width: 100%;">
+        <label>Materia</label>
+        <textarea name="materia" rows="3"
+          style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"
+        >{{ registro.materia }}</textarea>
+      </div>
+    </div>
 
-            <div class="col">
-                <label for="oficio">Oficio</label>
-                <input type="text" id="oficio" name="oficio" class="form-control" value="{{ registro.oficio }}" required>
-            </div>
+    <!-- FILA 2: FECHAS -->
+    <div class="row">
+      <div class="col">
+        <label>Fecha de Oficio</label>
+        <input class="small-box fecha-nohabiles" type="date" name="fecha_oficio" required id="fecha_oficio"
+          value="{{ registro.fecha_oficio|date:'Y-m-d' }}">
+      </div>
 
+      <div class="col">
+        <label>Fecha de Respuesta</label>
+        <input class="small-box fecha-nohabiles" type="date" name="fecha_respuesta" id="fecha_respuesta"
+          value="{{ registro.fecha_respuesta|date:'Y-m-d' }}">
+      </div>
+    </div>
+
+    <!-- ASIGNACIÓN -->
+    <div class="row" style="margin-top:20px;">
+      <div class="col" style="width:100%;">
+        <label style="display:block; margin-bottom:6px;">Asignación</label>
+
+        <input type="text" id="asignacion_search" placeholder="Buscar dirección..."
+          style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; margin-bottom:10px;" />
+
+        <div id="asignacion_list"
+          style="border:1px solid #ccc; border-radius:6px; padding:10px; max-height:220px; overflow:auto;">
+
+          {% for item in asignaciones %}
+            {% if item != "Otro" %}
+              <label style="display:flex; gap:8px; align-items:center; margin:6px 0;">
+                <input type="checkbox" name="asignacion[]" value="{{ item|escape }}"
+                  {% if item in asignaciones_seleccionadas %}checked{% endif %}>
+                {{ item }}
+              </label>
+            {% endif %}
+          {% endfor %}
+
+          <label style="display:flex; gap:8px; align-items:center; margin:6px 0;">
+            <input type="checkbox" id="asig_otro_chk" name="asignacion[]" value="Otro"
+              {% if asignacion_otro_texto %}checked{% endif %}>
+            Otro
+          </label>
+
+          <div id="asig_otro_wrap" style="display:none; margin-top:8px;">
+            <input type="text" id="asig_otro_txt" name="asignacion_otro"
+              placeholder="Especifica cuál..."
+              value="{{ asignacion_otro_texto }}"
+              style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;" />
+          </div>
         </div>
 
-        <div class="form-group">
-            <label for="materia">Materia</label>
-            <textarea id="materia" name="materia" class="form-control" rows="4" required>{{ registro.materia }}</textarea>
-        </div>
+        <small class="text-muted">Marca una o varias opciones.</small>
+      </div>
+    </div>
 
-        <div class="form-group">
-            <label for="fecha_oficio">Fecha Oficio</label>
-            <input type="date" id="fecha_oficio" name="fecha_oficio" class="form-control" value="{{ registro.fecha_oficio|date:'Y-m-d' }}" required>
-        </div>
+    <!-- DIRIGIDO A / CC -->
+    <div class="row" style="margin-top: 20px;">
+      <div class="col" style="width: 100%;">
+        <label>Dirigido a</label>
+        <input type="text" name="dirigido_a" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"
+          value="{{ registro.dirigido_a }}">
+      </div>
+    </div>
 
-        <div class="form-group">
-            <label for="fecha_respuesta">Fecha Respuesta</label>
-            <input type="date" id="fecha_respuesta" name="fecha_respuesta" class="form-control" value="{{ registro.fecha_respuesta|date:'Y-m-d' }}" required>
-        </div>
+    <div class="row" style="margin-top: 15px;">
+      <div class="col" style="width: 100%;">
+        <label>CC</label>
+        <input type="text" name="cc" style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"
+          value="{{ registro.cc }}">
+      </div>
+    </div>
 
-        <div class="form-group">
-            <label for="asignacion">Asignación</label>
-            <select name="asignacion" id="asignacion" class="form-control" required>
-                <option value="">-- Seleccionar --</option>
-                <option value="Administración Municipal" {% if registro.asignacion == 'Administración Municipal' %}selected{% endif %}>Administración Municipal</option>
-                <option value="Alcaldía" {% if registro.asignacion == 'Alcaldía' %}selected{% endif %}>Alcaldía</option>
-                <option value="Delegación territorial" {% if registro.asignacion == 'Delegación territorial' %}selected{% endif %}>Delegación territorial</option>
-                <option value="Dirección de Administración y Finanzas" {% if registro.asignacion == 'Dirección de Administración y Finanzas' %}selected{% endif %}>Dirección de Administración y Finanzas</option>
-                <option value="Dirección de Asesoría Jurídica" {% if registro.asignacion == 'Dirección de Asesoría Jurídica' %}selected{% endif %}>Dirección de Asesoría Jurídica</option>
-                <option value="Dirección de Desarrollo Comunitario" {% if registro.asignacion == 'Dirección de Desarrollo Comunitario' %}selected{% endif %}>Dirección de Desarrollo Comunitario</option>
-                <option value="Dirección de Desarrollo Cultural" {% if registro.asignacion == 'Dirección de Desarrollo Cultural' %}selected{% endif %}>Dirección de Desarrollo Cultural</option>
-                <option value="Dirección de Género, Mujeres y Diversidades" {% if registro.asignacion == 'Dirección de Género, Mujeres y Diversidades' %}selected{% endif %}>Dirección de Género, Mujeres y Diversidades</option>
-                <option value="Dirección de Medioambiente" {% if registro.asignacion == 'Dirección de Medioambiente' %}selected{% endif %}>Dirección de Medioambiente</option>
-                <option value="Dirección de Obras Municipales" {% if registro.asignacion == 'Dirección de Obras Municipales' %}selected{% endif %}>Dirección de Obras Municipales</option>
-                <option value="Dirección de Operaciones" {% if registro.asignacion == 'Dirección de Operaciones' %}selected{% endif %}>Dirección de Operaciones</option>
-                <option value="Dirección de Seguridad Ciudadana" {% if registro.asignacion == 'Dirección de Seguridad Ciudadana' %}selected{% endif %}>Dirección de Seguridad Ciudadana</option>
-                <option value="Dirección de Tránsito y Transporte públicos" {% if registro.asignacion == 'Dirección de Tránsito y Transporte públicos' %}selected{% endif %}>Dirección de Tránsito y Transporte públicos</option>
-                <option value="Dirección de Vivienda, Barrio y Territorio" {% if registro.asignacion == 'Dirección de Vivienda, Barrio y Territorio' %}selected{% endif %}>Dirección de Vivienda, Barrio y Territorio</option>
-                <option value="Dirección desarrollo Económico y Cooperación Internacional" {% if registro.asignacion == 'Dirección desarrollo Económico y Cooperación Internacional' %}selected{% endif %}>Dirección desarrollo Económico y Cooperación Internacional</option>
-                <option value="Gabinete" {% if registro.asignacion == 'Gabinete' %}selected{% endif %}>Gabinete</option>
-                <option value="Juzgados" {% if registro.asignacion == 'Juzgados' %}selected{% endif %}>Juzgados</option>
-                <option value="SECPLA" {% if registro.asignacion == 'SECPLA' %}selected{% endif %}>SECPLA</option>
-                <option value="otro" {% if registro.asignacion == 'otro' %}selected{% endif %}>Otro</option>
-            </select>
-        </div>
+    <!-- RESPUESTA -->
+    <div class="row" style="margin-top: 20px;">
+      <div class="col" style="width: 100%;">
+        <label>Respuesta</label>
+        <textarea name="respuesta" rows="4"
+          style="width:100%; padding:10px; border-radius:6px; border:1px solid #ccc;"
+        >{{ registro.respuesta }}</textarea>
+      </div>
+    </div>
 
-        <div class="form-group" id="otro-departamento-row" style="display: none;">
-            <label for="otro_departamento">Especifique el departamento</label>
-            <input type="text" id="otro_departamento" name="otro_departamento" class="form-control" placeholder="Escriba el departamento" value="{{ registro.otro_departamento|default:'' }}">
-        </div>
+    <!-- TERMINADO -->
+    <div class="row" style="margin-top: 15px;">
+      <div class="col" style="width: 100%;">
+        <label style="display:flex; align-items:center; gap:10px; margin-top:8px;">
+          <input type="checkbox" name="terminado" {% if registro.terminado %}checked{% endif %}>
+          Marcar como terminado
+        </label>
+      </div>
+    </div>
 
-        <script>
-            document.getElementById('asignacion').addEventListener('change', function() {
-                const otroDeptRow = document.getElementById('otro-departamento-row');
-                if (this.value === 'otro') {
-                    otroDeptRow.style.display = 'block';
-                    document.getElementById('otro_departamento').required = true;
-                } else {
-                    otroDeptRow.style.display = 'none';
-                    document.getElementById('otro_departamento').required = false;
-                }
-            });
-            
-            // Mostrar campo si hay valor guardado
-            window.addEventListener('DOMContentLoaded', function() {
-                const select = document.getElementById('asignacion');
-                if (select.value === 'otro') {
-                    document.getElementById('otro-departamento-row').style.display = 'block';
-                }
-            });
-        </script>
+    <hr style="border:0; height:1px; background:linear-gradient(90deg, rgba(0,91,197,0), rgba(0,91,197,0.6), rgba(0,91,197,0)); margin:20px 0 24px;">
 
-        <h5>Documentos actuales</h5>
-        <ul class="list-group mb-3">
-            {% for doc in registro.documentos.all %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <a href="{{ doc.archivo.url }}" target="_blank">{{ doc.nombre }}</a><br>
-                    <small class="text-muted">
-                        Subido: {{ doc.fecha_subida|date:"d-m-Y H:i" }}
-                    </small>
-                </div>
-                <label class="text-danger ms-3 mb-0">
-                    <input type="checkbox" name="eliminar_docs" value="{{ doc.id }}">
-                    Eliminar
-                </label>
-            </li>
-            {% empty %}
-            <li class="list-group-item text-muted">No hay documentos asociados.</li>
-            {% endfor %}
-        </ul>
+    <!-- DOCUMENTOS EXISTENTES -->
+    <div class="row" style="margin-top: 10px;">
+      <div class="col" style="width: 100%;">
+        <label>Documentos existentes</label>
 
-        <h5>Agregar nuevos documentos</h5>
-        <div>
-            <div id="drop-area" class="p-4 border rounded text-center" style="background:#f9f9f9; cursor:pointer;"></div>
-                <p class="mb-2">Arrastra y suelta archivos aquí o haz clic para seleccionar</p>
-                <button type="button" id="browse-btn" class="btn btn-outline-secondary btn-sm">Seleccionar archivos</button>
-                <input id="file-input" type="file" name="archivos" multiple class="d-none" />
-            </div>
-            <ul id="file-list" class="list-group mt-3"></ul>  
+        {% if documentos %}
+            <ul class="list-group mt-2">
+                {% for d in documentos %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div class="text-start">
+                    <strong>{{ d.nombre }}</strong><br>
+                    <small class="text-muted">{{ d.fecha_subida }}</small>
+                    </div>
 
+                    <div style="display:flex; gap:8px;">
+                    <a class="btn btn-azul btn-tooltip" title="Ver" href="{{ d.archivo.url }}" target="_blank">📎</a>
 
-        <button type="submit" title="Enviar" class="btn btn-azul btn-tooltip">​💾​</button>
-    </form>
-    <br>
-    <a class="btn btn-rojo btn-tooltip" title="Cancelar" href="/">​❌ </a>
+                    <button
+                        type="button"
+                        class="btn btn-rojo btn-tooltip btn-doc-eliminar"
+                        title="Eliminar"
+                        data-delete-url="{% url 'documento_eliminar' d.id %}"
+                    >❌</button>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted mt-2">Sin documentos.</p>
+            {% endif %}
+      </div>
+    </div>
+
+    <!-- SUBIR NUEVOS DOCUMENTOS -->
+    <div class="row" style="margin-top: 20px;">
+      <div class="col" style="width: 100%;">
+        <label>Agregar nuevos documentos</label>
+      </div>
+    </div>
+
+    <div>
+      <div id="drop-area" class="p-4 border rounded text-center" style="background:#fff; cursor:pointer;">
+        <button type="button" id="browse-btn" class="btn btn-azul">Subir Documentos</button>
+        <input id="file-input" type="file" name="archivos" multiple style="display: none;" />
+      </div>
+
+      <ul id="file-list" class="list-group mt-3"></ul>
+    </div>
+
+    <div>
+      <hr style="border:0; height:1px; background:linear-gradient(90deg, rgba(0,91,197,0), rgba(0,91,197,0.6), rgba(0,91,197,0)); margin:20px 0 24px;">
+    </div>
+    <!-- BOTONES -->
+    <div class="row">
+      <div class="col-center">
+        <a class="btn btn-azul btn-tooltip" title="Volver a la Lista" href="/">⬅</a>
+      </div>
+
+      <div class="col-center">
+        <button class="btn btn-azul btn-tooltip" type="submit" title="Guardar cambios" style="position: relative;">💾</button>
+      </div>
+    </div>
+
+  </form>
+
+  <form id="form-delete-doc" method="POST" style="display:none;">
+  {% csrf_token %}
+</form>
 </div>
 
 <br>
-<br>
 
+<!-- JS: Buscador + Otro -->
 <script>
-            document.getElementById('asignacion').addEventListener('change', function() {
-            const otroDeptRow = document.getElementById('otro-departamento-row');
-            if (this.value === 'otro') {
-                otroDeptRow.style.display = 'flex';
-                document.getElementById('otro_departamento').required = true;
-            } else {
-                otroDeptRow.style.display = 'none';
-                document.getElementById('otro_departamento').required = false;
-            }
-            });
+(function () {
+  const search = document.getElementById("asignacion_search");
+  const list = document.getElementById("asignacion_list");
+  if (!search || !list) return;
+
+  const items = Array.from(list.querySelectorAll("label"))
+    .filter(l => l.querySelector('input[type="checkbox"]'));
+
+  const otroChk = document.getElementById("asig_otro_chk");
+  const otroWrap = document.getElementById("asig_otro_wrap");
+  const otroTxt = document.getElementById("asig_otro_txt");
+
+  search.addEventListener("input", () => {
+    const q = search.value.trim().toLowerCase();
+    items.forEach(label => {
+      const text = label.textContent.trim().toLowerCase();
+      label.style.display = text.includes(q) ? "flex" : "none";
+    });
+
+    if (otroChk && otroChk.checked) otroWrap.style.display = "block";
+  });
+
+  if (otroChk) {
+    const toggleOtro = () => {
+      const on = otroChk.checked;
+      otroWrap.style.display = on ? "block" : "none";
+      otroTxt.required = on;
+      if (!on) otroTxt.value = "";
+    };
+    otroChk.addEventListener("change", toggleOtro);
+
+    // si venía marcado desde backend, mostrar al cargar
+    if (otroChk.checked) {
+      otroWrap.style.display = "block";
+      otroTxt.required = true;
+    } else {
+      toggleOtro();
+    }
+  }
+})();
 </script>
 
+<!-- JS: Drag & drop (agregar nuevos documentos) -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const dropArea   = document.getElementById('drop-area');
-    const fileInput  = document.getElementById('file-input');
-    const browseBtn  = document.getElementById('browse-btn');
-    const fileListUl = document.getElementById('file-list');
+  const dropArea   = document.getElementById('drop-area');
+  const fileInput  = document.getElementById('file-input');
+  const browseBtn  = document.getElementById('browse-btn');
+  const fileListUl = document.getElementById('file-list');
 
-    // Array donde vamos a guardar los archivos seleccionados
-    let selectedFiles = [];
+  if (!dropArea || !fileInput || !browseBtn || !fileListUl) return;
 
-    // ---------------------------
-    // helpers
-    // ---------------------------
-    function bytesToSize(bytes) {
-        if (bytes === 0) return '0 B';
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(1024));
-        return parseFloat((bytes / Math.pow(1024, i)).toFixed(1)) + ' ' + sizes[i];
-    }
+  let selectedFiles = [];
 
-    function rebuildInputFiles() {
-        // Reconstruye fileInput.files con los archivos que quedan
-        const dataTransfer = new DataTransfer();
-        selectedFiles.forEach(f => dataTransfer.items.add(f));
-        fileInput.files = dataTransfer.files;
-    }
+  function bytesToSize(bytes) {
+    if (bytes === 0) return '0 B';
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return parseFloat((bytes / Math.pow(1024, i)).toFixed(1)) + ' ' + sizes[i];
+  }
 
-    function renderFileList() {
-        fileListUl.innerHTML = '';
+  function rebuildInputFiles() {
+    const dataTransfer = new DataTransfer();
+    selectedFiles.forEach(f => dataTransfer.items.add(f));
+    fileInput.files = dataTransfer.files;
+  }
 
-        if (selectedFiles.length === 0) {
-            return;
-        }
+  function renderFileList() {
+    fileListUl.innerHTML = '';
+    if (selectedFiles.length === 0) return;
 
-        selectedFiles.forEach((file, index) => {
-            const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+    selectedFiles.forEach((file, index) => {
+      const li = document.createElement('li');
+      li.className = 'list-group-item d-flex justify-content-between align-items-center';
 
-            li.innerHTML = `
-                <div class="text-start">
-                    <strong>${file.name}</strong><br>
-                    <small class="text-muted">${bytesToSize(file.size)}</small>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-danger" data-index="${index}">
-                    Quitar
-                </button>
-            `;
+      li.innerHTML = `
+        <div class="text-start">
+          <strong>${file.name}</strong><br>
+          <small class="text-muted">${bytesToSize(file.size)}</small>
+        </div>
+        <button type="button" class="btn btn-rojo btn-tooltip" title="Quitar" data-index="${index}">❌</button>
+      `;
 
-            fileListUl.appendChild(li);
-        });
+      fileListUl.appendChild(li);
+    });
 
-        // manejar clicks en botón "Quitar"
-        fileListUl.querySelectorAll('button[data-index]').forEach(btn => {
-            btn.addEventListener('click', function () {
-                const idx = parseInt(this.getAttribute('data-index'));
-                selectedFiles.splice(idx, 1);     // eliminar del array
-                rebuildInputFiles();              // actualizar input.files
-                renderFileList();                 // re-dibujar lista
-            });
-        });
-    }
-
-    function addFiles(files) {
-        // files es un FileList o array-like
-        Array.from(files).forEach(file => {
-            // evitar duplicados por nombre + tamaño + fecha modif
-            const exists = selectedFiles.some(f =>
-                f.name === file.name &&
-                f.size === file.size &&
-                f.lastModified === file.lastModified
-            );
-            if (!exists) {
-                selectedFiles.push(file);
-            }
-        });
-
+    fileListUl.querySelectorAll('button[data-index]').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const idx = parseInt(this.getAttribute('data-index'));
+        selectedFiles.splice(idx, 1);
         rebuildInputFiles();
         renderFileList();
-    }
+      });
+    });
+  }
 
-    // ---------------------------
-    // Eventos
-    // ---------------------------
-
-    // click en el botón → abre selector de archivos
-    browseBtn.addEventListener('click', () => fileInput.click());
-
-    // click en el área completa → también abre selector
-    dropArea.addEventListener('click', (e) => {
-        // evitamos que el click en el botón se duplique
-        if (e.target.id !== 'browse-btn') {
-            fileInput.click();
-        }
+  function addFiles(files) {
+    Array.from(files).forEach(file => {
+      const exists = selectedFiles.some(f =>
+        f.name === file.name &&
+        f.size === file.size &&
+        f.lastModified === file.lastModified
+      );
+      if (!exists) selectedFiles.push(file);
     });
 
-    // cuando el usuario selecciona archivos por el input
-    fileInput.addEventListener('change', function () {
-        if (this.files && this.files.length > 0) {
-            addFiles(this.files);
-        }
-    });
+    rebuildInputFiles();
+    renderFileList();
+  }
 
-    // drag & drop
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropArea.addEventListener(eventName, function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            dropArea.classList.add('border-primary');
-            dropArea.style.background = '#f8f9fa';
-        });
-    });
+  browseBtn.addEventListener('click', () => fileInput.click());
 
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-            dropArea.classList.remove('border-primary');
-            dropArea.style.background = '#fff';
-        });
-    });
+  dropArea.addEventListener('click', (e) => {
+    if (e.target.id !== 'browse-btn') fileInput.click();
+  });
 
-    dropArea.addEventListener('drop', function (e) {
-        const dt = e.dataTransfer;
-        if (dt && dt.files && dt.files.length > 0) {
-            addFiles(dt.files);
-        }
+  fileInput.addEventListener('change', function () {
+    if (this.files && this.files.length > 0) addFiles(this.files);
+  });
+
+  ['dragenter', 'dragover'].forEach(eventName => {
+    dropArea.addEventListener(eventName, function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropArea.classList.add('border-primary');
+      dropArea.style.background = '#f8f9fa';
     });
+  });
+
+  ['dragleave', 'drop'].forEach(eventName => {
+    dropArea.addEventListener(eventName, function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      dropArea.classList.remove('border-primary');
+      dropArea.style.background = '#fff';
+    });
+  });
+
+  dropArea.addEventListener('drop', function (e) {
+    const dt = e.dataTransfer;
+    if (dt && dt.files && dt.files.length > 0) addFiles(dt.files);
+  });
 });
 </script>
+
+<!-- JS: Feriados + fines de semana (misma lógica que crear) -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const fechaOficio    = document.getElementById('fecha_oficio');
+  const fechaRespuesta = document.getElementById('fecha_respuesta');
+  const form           = document.getElementById('form-oficio');
+
+  if (!fechaOficio || !form) return;
+
+  const inputsFecha = [fechaOficio, fechaRespuesta].filter(Boolean);
+  const feriados = new Set();
+
+  fetch('https://api.boostr.cl/holidays.json')
+    .then(r => r.json())
+    .then(data => {
+      let lista = [];
+      if (Array.isArray(data)) lista = data;
+      else {
+        for (const key in data) {
+          if (Array.isArray(data[key])) { lista = data[key]; break; }
+        }
+      }
+      lista.forEach(item => item?.date && feriados.add(item.date));
+    })
+    .catch(err => console.error('No se pudieron cargar los feriados:', err));
+
+  function esFechaInvalida(valorFecha) {
+    if (!valorFecha) return false;
+    const fecha = new Date(valorFecha + 'T00:00:00');
+    const diaSemana = fecha.getDay();
+    if (diaSemana === 0 || diaSemana === 6) return 'No se permiten sábados ni domingos.';
+    if (feriados.has(valorFecha)) return 'La fecha seleccionada es un día feriado.';
+    return false;
+  }
+
+  function validarFechas(mostrarAlert = false) {
+    for (const input of inputsFecha) {
+      const valor = input.value;
+      const msg = esFechaInvalida(valor);
+
+      if (msg) {
+        input.value = '';
+        input.setCustomValidity(msg);
+        input.reportValidity();
+        if (mostrarAlert) alert(msg.includes('feriado') ? 'No se puede guardar en un día feriado.' : msg);
+        return false;
+      } else {
+        input.setCustomValidity('');
+      }
+    }
+    return true;
+  }
+
+  inputsFecha.forEach(input => input.addEventListener('change', () => validarFechas(false)));
+
+  // Si quieres bloquear submit también:
+  form.addEventListener('submit', (e) => {
+    if (!validarFechas(true)) e.preventDefault();
+  });
+});
+</script>
+
+<script>
+document.addEventListener("click", function(e) {
+  const btn = e.target.closest(".btn-doc-eliminar");
+  if (!btn) return;
+
+  e.preventDefault();
+
+  if (!confirm("¿Eliminar documento?")) return;
+
+  const url = btn.getAttribute("data-delete-url");
+  if (!url) return;
+
+  const form = document.getElementById("form-delete-doc");
+  form.setAttribute("action", url);
+  form.submit();
+});
+</script>
+
+
 
 {% endblock %}

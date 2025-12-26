@@ -28,11 +28,53 @@
     </div>
 </div>
 
+
+
+
+<div class="modal fade" id="modal-detalle-registro" tabindex="-1" role="dialog" aria-labelledby="modalDetalleLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalDetalleLabel">Detalle del registro</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar" onclick="cerrarModal()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body" id="modal-detalle-registro-body">
+        <!-- Contenido aquí -->
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-gris" data-dismiss="modal" onclick="cerrarModal()">Cerrar</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <script>
-function cerrarModal() {
-    $('#miModalResponder').modal('hide');
-    document.getElementById('formResponder').reset();
+function cerrarModal(modalId = null, formId = null) {
+  let $modal;
+
+  if (modalId) {
+    $modal = $('#' + modalId);
+  } else {
+    // Busca el modal más cercano al botón que disparó el evento
+    const el = event?.target?.closest('.modal');
+    if (!el) return;
+    $modal = $(el);
+  }
+
+  $modal.modal('hide');
+
+  if (formId) {
+    const form = document.getElementById(formId);
+    if (form) form.reset();
+  }
 }
+
 
 function enviarRespuesta() {
     var respuesta = document.getElementById('respuesta').value;

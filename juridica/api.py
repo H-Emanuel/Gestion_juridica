@@ -6,6 +6,55 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from datetime import date, timedelta
 import requests
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
+@csrf_exempt
+def registro_detalle_api(request, pk):
+    r = get_object_or_404(RegistroJuridico, pk=pk)
+
+    # RespuestaJuridica: puede no existir (OneToOne)
+    try:
+        resp = r.respuesta_juridica
+        respuesta_data = {
+            "id": resp.id,
+            "respuesta": resp.respuesta,
+            "fecha_termino": resp.fecha_termino.isoformat() if resp.fecha_termino else None,
+            "archivo": resp.archivo.url if resp.archivo else None,
+        }
+    except RespuestaJuridica.DoesNotExist:
+        respuesta_data = None
+
+    # Documentos: puede ser lista vacía (FK)
+    documentos = []
+    for d in r.documentos.all().order_by("-fecha_subida"):
+        documentos.append({
+            "id": d.id,
+            "nombre": d.nombre,
+            "fecha_subida": d.fecha_subida.isoformat() if d.fecha_subida else None,
+            "archivo": d.archivo.url if d.archivo else None,
+        })
+
+    data = {
+        "id": r.id,
+        "folio": r.folio,
+        "oficio": r.oficio,
+        "materia": r.materia,
+        "fecha_oficio": r.fecha_oficio.isoformat() if r.fecha_oficio else None,
+        "fecha_respuesta": r.fecha_respuesta.isoformat() if r.fecha_respuesta else None,
+        "asignaciones": r.asignaciones or [],
+        "terminado": r.terminado,
+        "dirigido_a": r.dirigido_a,
+        "cc": r.cc,
+        "respuesta": r.respuesta,
+        "dias_transcurridos": r.dias_transcurridos,
+        "requiere_alerta": r.requiere_alerta,
+        "respuesta_juridica": respuesta_data,   # null si no hay
+        "documentos": documentos,               # [] si no hay
+    }
+
+    return JsonResponse(data, json_dumps_params={"ensure_ascii": False})
+
 
 @csrf_exempt
 def RegistroJuridico_list(request):
@@ -21,7 +70,7 @@ def RegistroJuridico_list(request):
         columns = [
             "folio",
             "oficio",
-            "materia",
+            "asignaciones",
             "fecha_oficio",
             "fecha_respuesta",
             "asignacion",
@@ -40,8 +89,7 @@ def RegistroJuridico_list(request):
             registros = registros.filter(
                 Q(folio__icontains=search_value) |
                 Q(oficio__icontains=search_value) |
-                Q(materia__icontains=search_value) |
-                Q(asignacion__icontains=search_value)
+                Q(asignaciones__icontains=search_value)
             )
 
         total_records = RegistroJuridico.objects.count()
@@ -62,15 +110,15 @@ def RegistroJuridico_list(request):
             holidays = set()
 
         for r in page:
-            if r.fecha_oficio:
-                base = r.fecha_respuesta or date.today()
+            if r.fecha_respuesta:
+                base = date.today()
                 dias = 0
-                current = r.fecha_oficio
+                current = r.fecha_respuesta
 
                 while current < base:
                     # solo lunes-viernes y NO feriado
                     if current.weekday() < 5 and current.strftime("%Y-%m-%d") not in holidays:
-                        dias += 1
+                        dias -= 1
 
                     # SIEMPRE avanzar 1 día
                     current += timedelta(days=1)
@@ -82,7 +130,7 @@ def RegistroJuridico_list(request):
                 "id": r.id,
                 "folio": r.folio,
                 "oficio": r.oficio,
-                "materia": r.materia,  # truncamos en el frontend
+                "asignaciones": r.asignaciones,  # truncamos en el frontend
                 "fecha_oficio": r.fecha_oficio.strftime("%d-%m-%Y") if r.fecha_oficio else "",
                 "fecha_respuesta": r.fecha_respuesta.strftime("%d-%m-%Y") if r.fecha_respuesta else "—",
                 "dias_transcurridos": dias,
@@ -113,10 +161,9 @@ def RegistroJuridico_terminado_list(request):
         columns = [
             "folio",
             "oficio",
-            "materia",
+            "asignaciones",
             "fecha_oficio",
             "fecha_respuesta",
-            "asignacion",
         ]
 
         if order_column_index < 0 or order_column_index >= len(columns):
@@ -132,9 +179,8 @@ def RegistroJuridico_terminado_list(request):
             registros = registros.filter(
                 Q(folio__icontains=search_value) |
                 Q(oficio__icontains=search_value) |
-                Q(materia__icontains=search_value) |
-                Q(asignacion__icontains=search_value)
-            )
+                Q(asignaciones__icontains=search_value)
+                )
 
         total_records = RegistroJuridico.objects.count()
         total_filtered = registros.count()
@@ -148,7 +194,7 @@ def RegistroJuridico_terminado_list(request):
         data = []
         for r in page:
             if r.fecha_oficio:
-                base = r.fecha_respuesta or date.today()
+                base = date.today()
                 dias = (base - r.fecha_oficio).days
             else:
                 dias = None
@@ -157,7 +203,7 @@ def RegistroJuridico_terminado_list(request):
                 "id": r.id,
                 "folio": r.folio,
                 "oficio": r.oficio,
-                "materia": r.materia,  # truncamos en el frontend
+                "asignaciones": r.asignaciones,  # truncamos en el frontend
                 "fecha_oficio": r.fecha_oficio.strftime("%d-%m-%Y") if r.fecha_oficio else "",
                 "fecha_respuesta": r.fecha_respuesta.strftime("%d-%m-%Y") if r.fecha_respuesta else "—",
                 "dias_transcurridos": dias,

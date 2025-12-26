@@ -95,52 +95,82 @@ def crear_registro(request):
         })
 
 @csrf_exempt
-def editar_registro(request, id):
+def registro_editar(request, id):
     registro = get_object_or_404(RegistroJuridico, id=id)
 
     if request.method == "POST":
-        try:
-            with transaction.atomic():
-                registro.folio = request.POST.get("folio", "").strip()
-                registro.oficio = request.POST.get("oficio", "").strip()
-                registro.materia = request.POST.get("materia", "").strip()
-                registro.fecha_oficio = request.POST.get("fecha_oficio")
-                registro.fecha_respuesta = request.POST.get("fecha_respuesta") or None
-                registro.respuesta = request.POST.get("respuesta", "").strip()
-                registro.asignacion = request.POST.get("asignacion", "").strip()
-                registro.save()
+        # campos simples
+        registro.folio = request.POST.get("folio", "").strip()
+        registro.oficio = request.POST.get("oficio", "").strip()
+        registro.materia = request.POST.get("materia", "").strip()
+        registro.fecha_oficio = request.POST.get("fecha_oficio") or None
+        registro.fecha_respuesta = request.POST.get("fecha_respuesta") or None
+        registro.dirigido_a = request.POST.get("dirigido_a", "").strip()
+        registro.cc = request.POST.get("cc", "").strip()
+        registro.respuesta = request.POST.get("respuesta", "").strip()
 
-                ids_eliminar = request.POST.getlist("eliminar_docs")  # vienen como strings
+        # asignaciones (JSON)
+        asignaciones = request.POST.getlist("asignacion[]")
+        otro = request.POST.get("asignacion_otro", "").strip()
+        if otro:
+            # si marcaron "Otro" pero escribieron, guarda el texto como asignación real
+            asignaciones = [a for a in asignaciones if a != "Otro"]
+            asignaciones.append(otro)
+        else:
+            # si dejaron "Otro" marcado pero vacío, saca "Otro" para no guardar basura
+            asignaciones = [a for a in asignaciones if a != "Otro"]
 
-                for doc_id in ids_eliminar:
-                    try:
-                        doc = Documento.objects.get(id=doc_id, registro=registro)
-                        doc.archivo.delete(save=False)  # borra el archivo físico
-                        doc.delete()
-                    except Documento.DoesNotExist:
-                        pass
+        # dedupe manteniendo orden
+        seen = set()
+        asignaciones = [a for a in asignaciones if a and (a not in seen and not seen.add(a))]
 
-                archivos_nuevos = request.FILES.getlist("archivos")
-                for archivo in archivos_nuevos:
-                    Documento.objects.create(
-                        registro=registro,
-                        archivo=archivo
-                    )
+        registro.asignaciones = asignaciones
 
-            return redirect("lista_registros")
+        # terminado (si lo editas en form con checkbox)
+        registro.terminado = request.POST.get("terminado") == "on"
 
-        except Exception as e:
-            print("Error al editar registro:", e)
-            return render(request, "editar.html", {
-                "registro": registro,
-                "error": "Ocurrió un problema al actualizar el registro."
-            })
+        # agregar nuevos documentos (NO se pueden “precargar”, solo agregar)
+        nuevos_archivos = request.FILES.getlist("archivos")
 
-    # GET → mostrar formulario de edición
+        with transaction.atomic():
+            registro.save()
+
+            for f in nuevos_archivos:
+                Documento.objects.create(
+                    registro=registro,
+                    archivo=f,
+                    nombre=f.name
+                )
+
+        messages.success(request, "Registro actualizado.")
+        return redirect("editar_registro", id=registro.id)
+
+    # GET: precargar
+    asignaciones_seleccionadas = registro.asignaciones or []
+    # si hay una asignación que no está en lista, se considera “otro”
+    set_base = set([a for a in ASIGNACIONES if a != "Otro"])
+    otros = [a for a in asignaciones_seleccionadas if a not in set_base]
+    otro_texto = ", ".join(otros) if otros else ""
+
     return render(request, "editar.html", {
-        "registro": registro
-        # no hace falta pasar documentos, se acceden como registro.documentos.all
+        "registro": registro,
+        "asignaciones": ASIGNACIONES,
+        "asignaciones_seleccionadas": asignaciones_seleccionadas,
+        "asignacion_otro_texto": otro_texto,
+        "documentos": registro.documentos.all().order_by("-fecha_subida"),
     })
+
+def documento_eliminar(request, doc_id):
+    doc = get_object_or_404(Documento, pk=doc_id)
+    reg_id = doc.registro_id
+
+    # opcional: borrar archivo físico
+    if doc.archivo:
+        doc.archivo.delete(save=False)
+
+    doc.delete()
+    messages.success(request, "Documento eliminado.")
+    return redirect("registro_editar", pk=reg_id)
 
 
 @csrf_exempt
@@ -159,8 +189,15 @@ def reiterar_oficio(request, id):
 
                 archivos = request.FILES.getlist("archivos")
 
+                registro.dirigido_a = dirigido
+                registro.cc = copia
+                registro.respuesta = respuesta
+                registro.save()
+                
                 destinatarios = [e.strip() for e in dirigido.split(",") if e.strip()]
                 cc = [e.strip() for e in copia.split(",") if e.strip()] if copia else []
+
+                
 
                 enviar_correo_smtp(
                     usuario=usuario,

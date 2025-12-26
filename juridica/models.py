@@ -50,10 +50,12 @@ class RegistroJuridico(models.Model):
     materia = models.TextField()
     fecha_oficio = models.DateField()
     fecha_respuesta = models.DateField(null=True, blank=True)
-    respuesta = models.TextField(blank=True)
     asignaciones = models.JSONField(default=list, blank=True)
     terminado = models.BooleanField(default=False)
-    
+    dirigido_a = models.CharField(max_length=100, blank=True)
+    cc = models.CharField(max_length=255, blank=True)
+    respuesta = models.TextField(blank=True)
+
 
     def __str__(self):
         return f"{self.folio} - {self.oficio}"

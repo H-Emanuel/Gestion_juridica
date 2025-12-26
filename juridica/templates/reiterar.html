@@ -110,7 +110,13 @@
                 <div>
                     <label for="copia">En copia (CC)</label>
                     <input id="copia" name="copia" type="text" placeholder="correo1@ejemplo.com, correo2@ejemplo.com">
+                </div> 
+                
+                <div>
+                    <label for="respuesta">Extender Fecha De Respuesta</label>
+                    <input type="date" class="fecha-nohabiles" name="fecha_respuesta" id="fecha_respuesta">
                 </div>
+
 
                 <div>
                     <label for="respuesta">Respuesta</label>
@@ -147,6 +153,8 @@
             else fileInfo.textContent = files.length + ' archivos seleccionados';
         });
     </script>
+
+<script src="{% static 'js/limite_fecha.js' %}"></script>
 
 </div>
 

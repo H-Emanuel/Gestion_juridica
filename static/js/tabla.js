@@ -15,11 +15,46 @@ $(document).ready(function () {
       { data: "folio" },
       { data: "oficio" },
       {
-        data: "materia",
-        render: function (data, type) {
-          if (!data) return "";
-          if (type !== 'display') return data;
-          return data.length > 40 ? data.substring(0, 40) + "..." : data;
+        data: "asignaciones",
+        render: function (data, type, row) {
+          if (type !== "display") {
+            // Para orden/búsqueda devolvemos texto plano
+            if (Array.isArray(data)) return data.join(", ");
+            return data || "";
+          }
+
+          const asignaciones = Array.isArray(data) ? data : [];
+          if (!asignaciones.length) return `<span class="text-muted">Sin asignación</span>`;
+
+          const max = 3; // cuántas muestras antes de resumir
+          const visibles = asignaciones.slice(0, max);
+          const restantes = asignaciones.length - visibles.length;
+
+          const chip = (txt) => `
+            <span style="
+              display:inline-block;
+              background:#e9ecef;
+              color:#000;
+              border:1px solid #ced4da;
+              border-radius:6px;
+              padding:2px 6px;
+              font-size:12px;
+              margin-right:6px;
+              margin-bottom:4px;
+              white-space:nowrap;
+            ">${String(txt)
+                .replaceAll("&","&amp;")
+                .replaceAll("<","&lt;")
+                .replaceAll(">","&gt;")
+                .replaceAll('"',"&quot;")
+                .replaceAll("'","&#039;")
+            }</span>
+          `;
+
+          let html = visibles.map(chip).join("");
+          if (restantes > 0) html += `<span class="text-muted">+${restantes}</span>`;
+
+          return html;
         }
       },
       { data: "fecha_oficio" },
@@ -72,15 +107,61 @@ $(document).ready(function () {
       { data: "folio" },
       { data: "oficio" },
       {
-        data: "materia",
-        render: function (data, type) {
-          if (!data) return "";
-          if (type !== 'display') return data;
-          return data.length > 40 ? data.substring(0, 40) + "..." : data;
+        data: "asignaciones",
+        render: function (data, type, row) {
+          if (type !== "display") {
+            // Para orden/búsqueda devolvemos texto plano
+            if (Array.isArray(data)) return data.join(", ");
+            return data || "";
+          }
+
+          const asignaciones = Array.isArray(data) ? data : [];
+          if (!asignaciones.length) return `<span class="text-muted">Sin asignación</span>`;
+
+          const max = 3; // cuántas muestras antes de resumir
+          const visibles = asignaciones.slice(0, max);
+          const restantes = asignaciones.length - visibles.length;
+
+          const chip = (txt) => `
+            <span style="
+              display:inline-block;
+              background:#e9ecef;
+              color:#000;
+              border:1px solid #ced4da;
+              border-radius:6px;
+              padding:2px 6px;
+              font-size:12px;
+              margin-right:6px;
+              margin-bottom:4px;
+              white-space:nowrap;
+            ">${String(txt)
+                .replaceAll("&","&amp;")
+                .replaceAll("<","&lt;")
+                .replaceAll(">","&gt;")
+                .replaceAll('"',"&quot;")
+                .replaceAll("'","&#039;")
+            }</span>
+          `;
+
+          let html = visibles.map(chip).join("");
+          if (restantes > 0) html += `<span class="text-muted">+${restantes}</span>`;
+
+          return html;
         }
       },
       { data: "fecha_oficio" },
-      { data: "fecha_respuesta" }
+      { data: "fecha_respuesta" },
+      {
+        data: null,
+        orderable: false,
+        searchable: false,
+        render: function (data, type, row) {
+          if (type !== 'display') return null;
+          return `
+            <a href="#" data-id="${row.id}" class="btn btn-gris btn-tooltip btn-detalle" title="Detalle">📋</a>
+          `;
+        }
+      }
     ],
     initComplete: function () {
       setTimeout(function () {
