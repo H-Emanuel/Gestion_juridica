@@ -87,17 +87,27 @@ WSGI_APPLICATION = 'gestion_juridica.wsgi.application'
 #     }
 # }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE':'django.db.backends.postgresql_psycopg2',
+#         'NAME':'gestion_j',
+#         'USER':'postgres',
+#         'PASSWORD':'1234',
+#         'HOST':'localhost',
+#         'PORT':'5432',
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE':'django.db.backends.postgresql_psycopg2',
-        'NAME':'gestion_j',
-        'USER':'postgres',
-        'PASSWORD':'1234',
+        'NAME':'gestion_aj',
+        'USER':'gestion_aj',
+        'PASSWORD':'gestion_2025',
         'HOST':'localhost',
         'PORT':'5432',
     }
 }
-
 
 
 # Password validation
