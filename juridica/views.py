@@ -176,47 +176,59 @@ def documento_eliminar(request, doc_id):
 @csrf_exempt
 def reiterar_oficio(request, id):
     registro = get_object_or_404(RegistroJuridico, id=id)
-    
+
     if request.method == "POST":
+        usuario = request.POST.get("usuario", "").strip()
+        contraseña = request.POST.get("contraseña", "").strip()
+        dirigido = request.POST.get("dirigido", "").strip()
+        copia = request.POST.get("copia", "").strip()
+        respuesta = request.POST.get("respuesta", "").strip()
+        archivos = request.FILES.getlist("archivos")
+
+        # Validaciones mínimas (evita intentar SMTP con vacío)
+        if not usuario or not contraseña:
+            messages.error(request, "Falta usuario o contraseña.")
+            return render(request, "reiterar.html", {"registro": registro})
+
+        if not dirigido:
+            messages.error(request, "Falta el/los destinatarios (Dirigido a).")
+            return render(request, "reiterar.html", {"registro": registro})
+
+        destinatarios = [e.strip() for e in dirigido.split(",") if e.strip()]
+        cc = [e.strip() for e in copia.split(",") if e.strip()] if copia else []
+
         try:
+            # 1) Guarda cambios en DB rápido
             with transaction.atomic():
-                print( "Procesando formulario de reiterar_oficio..." )
-                usuario = request.POST.get("usuario", "").strip()
-                contraseña = request.POST.get("contraseña", "").strip()
-                dirigido = request.POST.get("dirigido", "").strip()
-                copia = request.POST.get("copia", "").strip()
-                respuesta = request.POST.get("respuesta", "").strip()
-
-                archivos = request.FILES.getlist("archivos")
-
                 registro.dirigido_a = dirigido
                 registro.cc = copia
                 registro.respuesta = respuesta
                 registro.save()
-                
-                destinatarios = [e.strip() for e in dirigido.split(",") if e.strip()]
-                cc = [e.strip() for e in copia.split(",") if e.strip()] if copia else []
 
-                
+            # 2) Envía correo fuera de la transacción
+            print(f"[reiterar_oficio] Enviando correo. to={len(destinatarios)} cc={len(cc)} adj={len(archivos)} usuario={usuario!r}")
+            enviar_correo_smtp(
+                usuario=usuario,
+                contraseña=contraseña,
+                asunto="Respuesta a Oficio Jurídico",
+                cuerpo=respuesta,
+                destinatarios=destinatarios,
+                cc=cc,
+                archivos=archivos
+            )
+            print("[reiterar_oficio] Correo enviado OK")
 
-                enviar_correo_smtp(
-                    usuario=usuario,
-                    contraseña=contraseña,
-                    asunto="Respuesta a Oficio Jurídico",
-                    cuerpo=respuesta,
-                    destinatarios=destinatarios,
-                    cc=cc,
-                    archivos=archivos
-                )
-
-                return redirect("lista_registros")
-
-        except Exception as e:
-            messages.error(request, f"Error al enviar correo: {e}")
+            messages.success(request, "Correo enviado correctamente.")
             return redirect("lista_registros")
 
-    
+        except Exception as e:
+            # No ocultar el error con redirect ciego
+            print(f"[reiterar_oficio] ERROR correo: {repr(e)}")
+            messages.error(request, f"Error al enviar correo: {e}")
+            return render(request, "reiterar.html", {"registro": registro})
+
     return render(request, "reiterar.html", {"registro": registro})
+
 
 @csrf_exempt
 def eliminar_registro(request, id):
