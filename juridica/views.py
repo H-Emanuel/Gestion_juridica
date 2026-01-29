@@ -66,8 +66,6 @@ def crear_registro(request):
                 registro.asignaciones = asignaciones
                 registro.save()
 
-
-
                 # 2) Obtener TODOS los archivos enviados en "archivos"
                 archivos = request.FILES.getlist("archivos")
 
@@ -93,6 +91,11 @@ def crear_registro(request):
     return render(request, "formulario.html", {
             "asignaciones": ASIGNACIONES
         })
+
+def crear_registro_2(request):
+
+
+    return render(request, "formulario_2.html")
 
 @csrf_exempt
 def registro_editar(request, id):

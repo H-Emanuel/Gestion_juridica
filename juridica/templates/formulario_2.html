@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Sumario Administrativo</title>
+
+<style>
+    :root {
+        --azul: #0b3c6f;
+        --verde: #198754;
+        --naranjo: #fd7e14;
+        --rojo: #dc3545;
+        --borde: #d9dee3;
+        --fondo: #f2f4f7;
+        --texto: #2b2b2b;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: var(--fondo);
+        margin: 0;
+        padding: 40px 20px;
+        color: var(--texto);
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        padding: 35px 40px;
+    }
+
+    h1 {
+        text-align: center;
+        color: var(--azul);
+        margin-bottom: 30px;
+        font-weight: 600;
+    }
+
+    fieldset {
+        border: 1px solid var(--borde);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+        background: #fafbfc;
+    }
+
+    legend {
+        padding: 0 10px;
+        font-weight: 600;
+        color: var(--azul);
+        font-size: 14px;
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+    }
+
+    label {
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+        color: #4b4b4b;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--borde);
+        border-radius: 6px;
+        font-size: 13px;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: var(--azul);
+        box-shadow: 0 0 0 3px rgba(11,60,111,0.15);
+    }
+
+    /* ===== BOTONES ADJUNTAR ===== */
+
+    .attach-col {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    .btn-attach {
+        padding: 11px 14px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .btn-blue {
+        border: 2px solid var(--azul);
+        color: var(--azul);
+    }
+
+    .btn-green {
+        border: 2px solid var(--verde);
+        color: var(--verde);
+    }
+
+    .btn-attach:hover {
+        background-color: currentColor;
+        color: #ffffff;
+    }
+
+    .file-hidden {
+        display: none;
+    }
+
+    .actions {
+        text-align: right;
+        margin-top: 30px;
+    }
+
+    button.save {
+        background: linear-gradient(135deg, var(--azul), #145a9e);
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        font-size: 14px;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        box-shadow: 0 6px 18px rgba(11,60,111,0.3);
+    }
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>Formulario de Sumario Administrativo</h1>
+
+    <form>
+
+        <fieldset>
+            <legend>N° Correlativo</legend>
+            <div class="row">
+                <div>
+                    <label>N°</label>
+                    <input type="text">
+                </div>
+                <!-- esto debe ser el ultimo + 1 para saber cual es el siguiente -->
+            
+                <div>
+                    <label>Fecha</label>
+                    <input type="date">
+                </div>
+            </div>
+        </fieldset>
+        
+
+        <fieldset>
+            <legend>D.A Instrucción Sumario</legend>
+            <div class="row">
+                <div>
+                    <label>N°</label>
+                    <input type="text">
+                </div>
+                <div>
+                    <label>Fecha</label>
+                    <input type="date">
+                </div>
+                <div>
+                    <label>Fiscal</label>
+                    <input type="text">
+                </div>
+                 <div>
+                    <label>Grado del Fiscal</label>
+                    <input type="text">
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Materia</legend>
+            <input type="text">
+        </fieldset>
+
+        <fieldset>
+            <legend>Nombre del posible Inculpado (opcion de agregar mas nombres)</legend>
+            <div class="row">
+                <div>
+                    <label>Nombre</label>
+                    <input type="text">
+                </div>
+                <div>
+                    <label>Grado</label>
+                    <input type="text">
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- tiene que ser un listado de nombres - grado, siguiente -->
+
+        <!-- VISTA FISCAL -->
+        
+        <!--  -->
+
+        <fieldset>
+            <legend>Vista Fiscal</legend>
+            <div class="row">
+                <div>
+                    <label>Oficio</label>
+                    <input type="text">
+                </div>
+                <div>
+                    <label>Fecha</label>
+                    <input type="date">
+                </div>
+                <div class="attach-col">
+                    <label>Adjuntar Oficio</label>
+                    <button type="button" class="btn-attach btn-blue">
+                        📎 Adjuntar
+                    </button>
+                    <input type="file" class="file-hidden">
+                </div>
+            </div>
+        </fieldset>
+
+        <!-- DIRECTOR JURÍDICO -->
+        <fieldset>
+            <legend>Informe de Legalidad de la Dirección Jurídica</legend>
+            <div class="row">
+                <div>
+                    <label>Oficio</label>
+                    <input type="text">
+                </div>
+                <div>
+                    <label>Fecha</label>
+                    <input type="date">
+                </div>
+                <div class="attach-col">
+                    <label>Adjuntar Oficio</label>
+                    <button type="button" class="btn-attach btn-green">
+                        📎 Adjuntar
+                    </button>
+                    <input type="file" class="file-hidden">
+                </div>
+            </div>
+        </fieldset>
+
+        
+
+        <!-- listado -->
+
+
+        <fieldset>
+            <legend>Sanción Aplicada</legend>
+            <input type="text">
+        </fieldset>
+
+ <div class="attach-col">
+                    <label>Adjuntar Oficio en sancion aplicada</label>
+                    <button type="button" class="btn-attach btn-blue">
+                        📎 Adjuntar
+                    </button>
+                    <input type="file" class="file-hidden">
+                </div>
+
+        <fieldset>
+            <legend>Contraloría Regional</legend>
+            <label>Fecha Registro</label>
+            <input type="date">
+        </fieldset>
+
+        <div class="actions">
+            <button type="button" class="save">Guardar Sumario</button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    document.querySelectorAll('.btn-attach').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.nextElementSibling.click();
+        });
+    });
+</script>
+
+</body>
+</html>

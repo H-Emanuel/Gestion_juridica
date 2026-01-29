@@ -4,6 +4,8 @@ from juridica import views,api
 urlpatterns = [
     path("", views.lista_registros, name="lista_registros"),
     path("crear/", views.crear_registro, name="crear_registro"),
+    path("crear_2/", views.crear_registro_2, name="crear_registro_2"),
+
     path("editar/<int:id>/", views.registro_editar, name="editar_registro"),
     path("eliminar/<int:id>/", views.eliminar_registro, name="eliminar_registro"),
     path("reiterar_oficio/<int:id>/", views.reiterar_oficio, name="reiterar_oficio"),
