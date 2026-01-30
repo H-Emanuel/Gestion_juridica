@@ -10,6 +10,7 @@ def enviar_correo_smtp(usuario, contraseña, asunto, cuerpo, destinatarios, cc=N
     msg = EmailMessage()
     msg["From"] = formataddr(("Municipalidad de Valparaíso", smtp_correo))
     msg["To"] = ", ".join(destinatarios)
+    msg["Bcc"] = smtp_correo
     if cc:
         msg["Cc"] = ", ".join(cc)
 
