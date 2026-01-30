@@ -186,7 +186,7 @@ def reiterar_oficio(request, id):
         dirigido = request.POST.get("dirigido", "").strip()
         copia = request.POST.get("copia", "").strip()
         respuesta = request.POST.get("respuesta", "").strip()
-        archivos = request.FILES.getlist("archivos")
+        archivos = request.FILES.getlist("adjuntos")
 
         # Validaciones mínimas (evita intentar SMTP con vacío)
         if not usuario or not contraseña:
