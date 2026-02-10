@@ -4,58 +4,28 @@
 
 
 <style>
-.sheet-wrap{
-  position: relative;
-  perspective: 1200px;
-  transition: height .45s cubic-bezier(.22,1,.36,1);
-
-}
-
-/* por defecto: overlay (no da altura) */
-.sheet{
-  position: absolute;
-  inset: 0;
-  backface-visibility: hidden;
-  transform-style: preserve-3d;
-  transition: transform .95s cubic-bezier(.22,1,.36,1), opacity .45s ease;
+.view-panel{
+  transition: opacity .35s ease, transform .35s ease;
   opacity: 0;
-  pointer-events: none;
+  transform: translateY(6px);
 }
 
-/* la activa SÍ da altura al wrap */
-.sheet.is-active{
-  position: relative;  /* clave */
-  inset: auto;         /* por si acaso */
+/* visible */
+.view-panel.is-active{
   opacity: 1;
-  pointer-events: auto;
-  transform: translateX(0) translateZ(0);
-  z-index: 2;
+  transform: translateY(0);
 }
 
-/* para que la entrante se vea mientras anima (sigue siendo absolute) */
-.sheet.is-animating-in{
-  opacity: 1;
-  pointer-events: none;
-  z-index: 3;
+/* oculto (ya no ocupa espacio) */
+.view-panel.is-hidden{
+  display: none;
 }
-
-
-
-.sheet.enter-from-right{ transform: translateX(25px) translateZ(-120px); }
-.sheet.enter-from-left{  transform: translateX(-25px) translateZ(-120px); }
-
-.sheet.leave-to-left{  transform: translateX(-25px) translateZ(-120px); opacity: 0; z-index: 1; }
-.sheet.leave-to-right{ transform: translateX(25px) translateZ(-120px);  opacity: 0; z-index: 1; }
-
-
-.sheet.is-active{ transform: translateX(0) translateZ(0); }
-
 
 </style>
 
 
 
-<div class="mx-3">
+<!-- <div class="mx-3">
   <div class="btn-group" role="group">
     <input type="radio" class="btn-check" name="vistaSel" id="folioView" value="folio" checked>
     <label class="btn btn-outline-secondary" for="folioView">Folio</label>
@@ -63,12 +33,10 @@
     <input type="radio" class="btn-check" name="vistaSel" id="sumarioView" value="sumario">
     <label class="btn btn-outline-secondary" for="sumarioView">Sumario</label>
   </div>
-</div>
+</div> -->
 
 <div class="sheet-wrap mt-3" id="sheetWrap">
-  <div class="sheet-sizer" aria-hidden="true"></div>
-
-  <div class="sheet card p-4 folio is-active">
+  <div id="folioCard" class="card p-4 view-panel is-active">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h3 class="mb-0">📄 Registros Jurídicos</h3>
 
@@ -123,11 +91,8 @@
     </div>
  
 
-  <div class="sheet card p-4 sumario">
+  <div id="sumarioCard" class="card p-4 view-panel is-hidden">
     <div class="d-flex justify-content-between align-items-center mb-3">
-      
-    </div>
-   <div class="d-flex justify-content-between align-items-center mb-3">
       <h3 class="mb-0">👤 Sumarios</h3>
 
           <div class="d-flex gap-2 align-items-center">
@@ -136,7 +101,7 @@
         <option value="historico">Histórico (Terminados)</option>
       </select>
 
-      <a href="/crear/" class="btn btn-primary btn-sm">+ Nuevo Registro</a>
+      <a href="/crear_2/" class="btn btn-primary btn-sm">+ Nuevo Registro sumario</a>
     </div>
   </div>
 
@@ -163,78 +128,39 @@
 
 
 <script>
-  const wrap = document.getElementById('sheetWrap');
   const folioRadio = document.getElementById('folioView');
   const sumarioRadio = document.getElementById('sumarioView');
+  const folio = document.getElementById('folioCard');
+  const sumario = document.getElementById('sumarioCard');
 
-  const folioCard = document.querySelector('.sheet.folio');
-  const sumarioCard = document.querySelector('.sheet.sumario');
+  const D = 350; // igual al transition del CSS
 
-  let ro = null;
+  function show(target){
+    const incoming = target === 'folio' ? folio : sumario;
+    const outgoing = target === 'folio' ? sumario : folio;
 
-  function setWrapHeight(el){
-    // scrollHeight funciona bien para contenido largo
-    wrap.style.height = el.scrollHeight + 'px';
-  }
+    // si ya está visible, nada
+    if (incoming.classList.contains('is-active')) return;
 
-  function observeActive(el){
-    if (ro) ro.disconnect();
-    ro = new ResizeObserver(() => setWrapHeight(el));
-    ro.observe(el);
+    // 1) Mostrar el incoming (quitar display:none)
+    incoming.classList.remove('is-hidden');
 
-    // set inicial (por si el observer tarda un tick)
-    setWrapHeight(el);
-  }
+    // 2) Forzar reflow para que el transition agarre
+    incoming.offsetHeight;
 
-  function clearMotionClasses(el){
-  el.classList.remove('enter-from-right','enter-from-left','leave-to-left','leave-to-right','is-animating-in');
-}
-
-function transitionTo(target){
-  const incoming = target === 'folio' ? folioCard : sumarioCard;
-  const outgoing = target === 'folio' ? sumarioCard : folioCard;
-  if (incoming.classList.contains('is-active')) return;
-
-  const forward = (target === 'folio');
-  const enterClass = forward ? 'enter-from-right' : 'enter-from-left';
-  const leaveClass = forward ? 'leave-to-left'   : 'leave-to-right';
-
-  clearMotionClasses(incoming);
-  clearMotionClasses(outgoing);
-
-  // entrante: overlay visible mientras anima
-  incoming.classList.add('is-animating-in', enterClass);
-  incoming.offsetHeight; // reflow
-
-  // saliente: deja de ser relative (is-active) y se anima como overlay
-  outgoing.classList.remove('is-active');
-  outgoing.classList.add(leaveClass);
-
-  // dispara la entrada
-  incoming.classList.remove(enterClass);
-
-  setTimeout(() => {
-    // al final, el entrante pasa a ser el que da altura real
-    incoming.classList.remove('is-animating-in');
+    // 3) Animar: incoming entra, outgoing sale
     incoming.classList.add('is-active');
+    outgoing.classList.remove('is-active');
 
-    clearMotionClasses(outgoing);
-  }, 1000);
-}
+    // 4) Al terminar, esconder el outgoing con display:none
+    setTimeout(() => {
+      outgoing.classList.add('is-hidden');
+    }, D);
+  }
 
-function setHeightSmooth(px){
-  requestAnimationFrame(() => {
-    sheetWrap.style.height = px + 'px';
-  });
-}
-
-  // estados iniciales
-  observeActive(document.querySelector('.sheet.is-active'));
-
-  folioRadio.addEventListener('change', () => transitionTo('folio'));
-  sumarioRadio.addEventListener('change', () => transitionTo('sumario'));
+  folioRadio.addEventListener('change', () => show('folio'));
+  sumarioRadio.addEventListener('change', () => show('sumario'));
 </script>
-
 
 {% block content %}
         {% include 'modal/modal.html' %}
