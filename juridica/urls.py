@@ -11,13 +11,17 @@ urlpatterns = [
     path("reiterar_oficio/<int:id>/", views.reiterar_oficio, name="reiterar_oficio"),
     path("documento/<int:doc_id>/eliminar/", views.documento_eliminar, name="documento_eliminar"),
 
-
+    # FOLIOS
     path("api/registros/", api.RegistroJuridico_list, name="api_registros"),
     path("api/historico/", api.RegistroJuridico_terminado_list, name="api_historico"),
     path("api/respondido/<int:id>/", api.oficio_respodido, name="oficio_respodido"),
     path("api/registro/<int:pk>/detalle/", api.registro_detalle_api, name="registro_detalle_api"),
 
+    # SUMARIO
 
+    path("eliminar_sumario/<int:id>/", views.eliminar_sumario, name="eliminar_sumario"),
+    path("api/sumario/", api.RegistroSumario_list, name="api_sumario"),
+    path("api/sumario/<int:pk>/detalle/", api.sumario_detalle, name="sumario_detalle_api"),
     path("login/", views.login, name="login"),
 
 

@@ -8,6 +8,7 @@ from email.mime.multipart import MIMEMultipart
 import smtplib
 from .function import enviar_correo_smtp
 from django.contrib import messages
+from django.db.models import Max
 
 def lista_registros(request):
     query = request.GET.get("q")
@@ -39,6 +40,13 @@ ASIGNACIONES = [
     "Juzgados",
     "SECPLA",
     "Otro",
+]
+
+SACCIONES = [
+    "1.-indagatoria o investigativa.",
+    "2.- formulación de encargos o etapa acusatoria",
+    "3.- periodo de descargos y/o periodo de prueba",
+    "4.- informe del fiscal",
 ]
 
 @csrf_exempt
@@ -91,11 +99,6 @@ def crear_registro(request):
     return render(request, "formulario.html", {
             "asignaciones": ASIGNACIONES
         })
-
-def crear_registro_2(request):
-
-
-    return render(request, "formulario_2.html")
 
 @csrf_exempt
 def registro_editar(request, id):
@@ -175,7 +178,6 @@ def documento_eliminar(request, doc_id):
     messages.success(request, "Documento eliminado.")
     return redirect("registro_editar", pk=reg_id)
 
-
 @csrf_exempt
 def reiterar_oficio(request, id):
     registro = get_object_or_404(RegistroJuridico, id=id)
@@ -232,13 +234,63 @@ def reiterar_oficio(request, id):
 
     return render(request, "reiterar.html", {"registro": registro})
 
-
 @csrf_exempt
 def eliminar_registro(request, id):
     registro = get_object_or_404(RegistroJuridico, id=id)
     registro.delete()
     return redirect("lista_registros")
 
+# SUMARIOS
+@csrf_exempt
+def crear_registro_2(request):
+    next_id = (RegistroSumario.objects.aggregate(m=Max("id"))["m"] or 0) + 1
+
+    context = {
+        "SACCIONES": SACCIONES,
+        "registro_id": next_id,
+    }
+    if request.method == "POST":
+
+        registro = RegistroSumario.objects.create(
+            Fecha_creacion=request.POST.get("fecha_creacion") or None,
+            n_da = request.POST.get("n_da", "").strip(),
+            fecha_da = request.POST.get("fecha_da") or None,
+            fiscal_acargo = request.POST.get("fiscal", "").strip(),
+            grado_fiscal = request.POST.get("grado_fiscal", "").strip(),
+            materia = request.POST.get("materia", "").strip(),
+            oficio_fiscalia = request.POST.get("oficio_vista_fiscal", "").strip(),
+            fecha_fiscalia = request.POST.get("fecha_vista_fiscal") or None,
+            adjunto_fiscalia = request.FILES.get("adjunto_fiscalia"),
+            oficio_juridico = request.POST.get("oficio_juridico", "").strip(),
+            fecha_juridico = request.POST.get("fecha_juridico") or None,
+            adjunto_juridico = request.FILES.get("adjunto_juridico"),
+            sancion = request.POST.getlist("sancion")[0] if request.POST.getlist("sancion") else "",
+            adjunto_sancion = request.FILES.get("adjunto_sancion"),
+            fecha_contrata = request.POST.get("fecha_contrata") or None,
+        )
+
+        nombres = request.POST.getlist("nombre[]")
+        grado = request.POST.getlist("grado[]")
+
+        registro.nombre_apellido_grado_imputado = [
+            {"nombre": n, "grado": g} for n, g in zip(nombres, grado)
+        ]
+
+        registro.save()
+        return redirect("lista_registros")
+
+
+
+    return render(request, "formulario_2.html", context)
+
+def eliminar_sumario(request, id):
+    registro = get_object_or_404(RegistroSumario, id=id)
+    registro.delete()
+    return redirect("lista_registros")
+
+
+
+# Login simple (sin auth ni nada, solo para demo)
 @csrf_exempt
 def login(request):
     print("Login view accessed")

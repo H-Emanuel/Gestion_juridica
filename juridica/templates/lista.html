@@ -25,7 +25,7 @@
 
 
 
-<!-- <div class="mx-3">
+<div class="mx-3">
   <div class="btn-group" role="group">
     <input type="radio" class="btn-check" name="vistaSel" id="folioView" value="folio" checked>
     <label class="btn btn-outline-secondary" for="folioView">Folio</label>
@@ -33,7 +33,7 @@
     <input type="radio" class="btn-check" name="vistaSel" id="sumarioView" value="sumario">
     <label class="btn btn-outline-secondary" for="sumarioView">Sumario</label>
   </div>
-</div> -->
+</div>
 
 <div class="sheet-wrap mt-3" id="sheetWrap">
   <div id="folioCard" class="card p-4 view-panel is-active">
@@ -106,15 +106,13 @@
   </div>
 
   <div id="wrapPendientes">
-    <table id="registrosTable" class="table table-hover table-bordered align-middle w-100">
+    <table id="SumarioTable" class="table table-hover table-bordered align-middle w-100">
       <thead>
         <tr>
-          <th>Folio</th>
-          <th>Oficio o Derivacion</th>
-          <th>Departamento/s</th>
-          <th>Fecha Oficio</th>
-          <th>Fecha Respuesta Prevista</th>
-          <th>Días transcurridos</th>
+          <th>N°</th>
+          <th>Fecha de Registro</th>
+          <th>N° D.A Instrucción Sumario</th>
+          <th>Fiscal</th>
           <th>Acciones</th>
         </tr>
       </thead>
@@ -169,6 +167,8 @@
 
 
 <script src="{% static 'js/tabla.js' %}"></script>
+<script src="{% static 'js/tabla_sumario.js' %}"></script>
+
 <script src="{% static 'js/detalle.js' %}"></script>
 
 

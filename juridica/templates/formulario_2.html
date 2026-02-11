@@ -1,170 +1,27 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8">
-<title>Sumario Administrativo</title>
+{% extends "base.html" %}
+{% block contenido %}
+{% load static %}
 
-<style>
-    :root {
-        --azul: #0b3c6f;
-        --verde: #198754;
-        --naranjo: #fd7e14;
-        --rojo: #dc3545;
-        --borde: #d9dee3;
-        --fondo: #f2f4f7;
-        --texto: #2b2b2b;
-    }
-
-    * {
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family: "Segoe UI", Arial, sans-serif;
-        background: var(--fondo);
-        margin: 0;
-        padding: 40px 20px;
-        color: var(--texto);
-    }
-
-    .container {
-        max-width: 1000px;
-        margin: auto;
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-        padding: 35px 40px;
-    }
-
-    h1 {
-        text-align: center;
-        color: var(--azul);
-        margin-bottom: 30px;
-        font-weight: 600;
-    }
-
-    fieldset {
-        border: 1px solid var(--borde);
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 25px;
-        background: #fafbfc;
-    }
-
-    legend {
-        padding: 0 10px;
-        font-weight: 600;
-        color: var(--azul);
-        font-size: 14px;
-    }
-
-    .row {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-        gap: 18px;
-    }
-
-    label {
-        font-size: 12px;
-        font-weight: 600;
-        margin-bottom: 6px;
-        display: block;
-        color: #4b4b4b;
-    }
-
-    input {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid var(--borde);
-        border-radius: 6px;
-        font-size: 13px;
-    }
-
-    input:focus {
-        outline: none;
-        border-color: var(--azul);
-        box-shadow: 0 0 0 3px rgba(11,60,111,0.15);
-    }
-
-    /* ===== BOTONES ADJUNTAR ===== */
-
-    .attach-col {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-    }
-
-    .btn-attach {
-        padding: 11px 14px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-weight: 600;
-        cursor: pointer;
-        background: #ffffff;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        transition: all 0.15s ease;
-    }
-
-    .btn-blue {
-        border: 2px solid var(--azul);
-        color: var(--azul);
-    }
-
-    .btn-green {
-        border: 2px solid var(--verde);
-        color: var(--verde);
-    }
-
-    .btn-attach:hover {
-        background-color: currentColor;
-        color: #ffffff;
-    }
-
-    .file-hidden {
-        display: none;
-    }
-
-    .actions {
-        text-align: right;
-        margin-top: 30px;
-    }
-
-    button.save {
-        background: linear-gradient(135deg, var(--azul), #145a9e);
-        color: white;
-        border: none;
-        padding: 12px 30px;
-        font-size: 14px;
-        font-weight: 600;
-        border-radius: 8px;
-        cursor: pointer;
-        box-shadow: 0 6px 18px rgba(11,60,111,0.3);
-    }
-</style>
-</head>
-
-<body>
+<link href="{% static 'css/sumario_form.css' %}" rel="stylesheet">
 
 <div class="container">
     <h1>Formulario de Sumario Administrativo</h1>
 
-    <form>
+    <form method="POST" id="form-oficio" enctype="multipart/form-data">
+        {% csrf_token %}
 
         <fieldset>
             <legend>N° Correlativo</legend>
             <div class="row">
                 <div>
                     <label>N°</label>
-                    <input type="text">
+                    <input type="text" value="{{ registro_id }}" readonly disabled >
                 </div>
                 <!-- esto debe ser el ultimo + 1 para saber cual es el siguiente -->
             
                 <div>
                     <label>Fecha</label>
-                    <input type="date">
+                    <input name="fecha_creacion" type="date" required>
                 </div>
             </div>
         </fieldset>
@@ -175,66 +32,83 @@
             <div class="row">
                 <div>
                     <label>N°</label>
-                    <input type="text">
+                    <input type="text" name="n_da" required>
                 </div>
                 <div>
                     <label>Fecha</label>
-                    <input type="date">
+                    <input type="date" fecha name="fecha_da" required>
                 </div>
                 <div>
                     <label>Fiscal</label>
-                    <input type="text">
+                    <input type="text" name="fiscal" required>
                 </div>
                  <div>
                     <label>Grado del Fiscal</label>
-                    <input type="text">
+                    <input type="text" name="grado_fiscal" required>
                 </div>
             </div>
         </fieldset>
 
         <fieldset>
             <legend>Materia</legend>
-            <input type="text">
+            <input type="text" name="materia" style="width:100%;">
         </fieldset>
 
         <fieldset>
-            <legend>Nombre del posible Inculpado (opcion de agregar mas nombres)</legend>
+            <legend>Nombre del posible Inculpado</legend>
+            <div id="inculpados-container">
             <div class="row">
                 <div>
-                    <label>Nombre</label>
-                    <input type="text">
+                <label>Nombre</label>
+                <input type="text" name="nombre[]" required>
                 </div>
                 <div>
-                    <label>Grado</label>
-                    <input type="text">
+                <label>Grado</label>
+                <input type="text" name="grado[]" required>
+                </div>
+                <div class="attach-col">
+                <button type="button" class="btn btn-rojo btn-tooltip btn-remove" style="display:none;" title="Eliminar">
+                    ❌
+                </button>
                 </div>
             </div>
+            </div>
+            <button type="button" class="btn btn-azul btn-tooltip" id="btn-add-inculpado" style="margin-top: 10px;" title="Agregar Inculpado">
+            ➕
+            </button>
         </fieldset>
-
-        <!-- tiene que ser un listado de nombres - grado, siguiente -->
-
-        <!-- VISTA FISCAL -->
-        
-        <!--  -->
 
         <fieldset>
             <legend>Vista Fiscal</legend>
             <div class="row">
                 <div>
                     <label>Oficio</label>
-                    <input type="text">
+                    <input type="text" name="oficio_vista_fiscal" required>
                 </div>
                 <div>
                     <label>Fecha</label>
-                    <input type="date">
+                    <input type="date" name="fecha_vista_fiscal" required>
                 </div>
                 <div class="attach-col">
-                    <label>Adjuntar Oficio</label>
-                    <button type="button" class="btn-attach btn-blue">
-                        📎 Adjuntar
+                <div class="file-attach" data-name="adjunto_fiscalia">
+                    <input class="file-attach__input" type="file" name="adjunto_fiscalia" hidden>
+
+                    <button type="button" class="file-attach__btn file-attach__btn--select">
+                    Adjuntar archivo
                     </button>
-                    <input type="file" class="file-hidden">
+
+                    <span class="file-attach__status" aria-live="polite">
+                    <span class="file-attach__check" aria-hidden="true">✓</span>
+                    <span class="file-attach__text">Archivo cargado</span>
+                    </span>
+
+                    <span class="file-attach__filename"></span>
+
+                    <button type="button" class="file-attach__btn file-attach__btn--change">
+                    Cambiar
+                    </button>
                 </div>
+            </div>
             </div>
         </fieldset>
 
@@ -244,60 +118,88 @@
             <div class="row">
                 <div>
                     <label>Oficio</label>
-                    <input type="text">
+                    <input type="text" name="oficio_juridico" required>
                 </div>
                 <div>
                     <label>Fecha</label>
-                    <input type="date">
+                    <input type="date" name="fecha_juridico" required>
                 </div>
                 <div class="attach-col">
-                    <label>Adjuntar Oficio</label>
-                    <button type="button" class="btn-attach btn-green">
-                        📎 Adjuntar
+                <div class="file-attach" data-name="adjunto_juridico">
+                    <input class="file-attach__input" type="file" name="adjunto_juridico" hidden>
+
+                    <button type="button" class="file-attach__btn file-attach__btn--select">
+                    Adjuntar archivo
                     </button>
-                    <input type="file" class="file-hidden">
+
+                    <span class="file-attach__status" aria-live="polite">
+                    <span class="file-attach__check" aria-hidden="true">✓</span>
+                    <span class="file-attach__text">Archivo cargado</span>
+                    </span>
+
+                    <span class="file-attach__filename"></span>
+
+                    <button type="button" class="file-attach__btn file-attach__btn--change">
+                    Cambiar
+                    </button>
                 </div>
+            </div>
             </div>
         </fieldset>
 
-        
-
-        <!-- listado -->
-
-
         <fieldset>
+        
             <legend>Sanción Aplicada</legend>
-            <input type="text">
-        </fieldset>
+        <div class="row">
+            <div>
+                <label>Sanción</label>
+                <select name="sancion" required>
+                    <option value="">-- Seleccionar sanción --</option>
+                    {% for sancion in SACCIONES %}
+                        <option value="{{ forloop.counter }}">{{ sancion }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
- <div class="attach-col">
-                    <label>Adjuntar Oficio en sancion aplicada</label>
-                    <button type="button" class="btn-attach btn-blue">
-                        📎 Adjuntar
+            <div class="attach-col">
+                <div class="file-attach" data-name="adjunto_3">
+                    <input class="file-attach__input" type="file" name="adjunto_sancion" hidden>
+
+                    <button type="button" class="file-attach__btn file-attach__btn--select">
+                    Adjuntar archivo
                     </button>
-                    <input type="file" class="file-hidden">
+
+                    <span class="file-attach__status" aria-live="polite">
+                    <span class="file-attach__check" aria-hidden="true">✓</span>
+                    <span class="file-attach__text">Archivo cargado</span>
+                    </span>
+
+                    <span class="file-attach__filename"></span>
+
+                    <button type="button" class="file-attach__btn file-attach__btn--change">
+                    Cambiar
+                    </button>
                 </div>
+            </div>
+
+
+        </div>
+        </fieldset>
 
         <fieldset>
             <legend>Contraloría Regional</legend>
             <label>Fecha Registro</label>
-            <input type="date">
+            <input type="date" name="fecha_contrata">
         </fieldset>
 
         <div class="actions">
-            <button type="button" class="save">Guardar Sumario</button>
+                <button class="btn btn-azul btn-tooltip" type="submit" title="Guardar el oficio jurídico" style="position: relative;">💾</button>
         </div>
 
     </form>
 </div>
+<br>
 
-<script>
-    document.querySelectorAll('.btn-attach').forEach(btn => {
-        btn.addEventListener('click', () => {
-            btn.nextElementSibling.click();
-        });
-    });
-</script>
+<script src="/static/js/sumario.js"></script>
 
-</body>
-</html>
+{% endblock %}

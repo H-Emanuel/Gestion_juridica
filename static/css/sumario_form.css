@@ -1,0 +1,193 @@
+
+
+
+    :root {
+
+        --borde: #d9dee3;
+        --fondo: #f2f4f7;
+        --texto: #2b2b2b;
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    .container {
+        max-width: 1000px;
+        margin: auto;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        padding: 35px 40px;
+    }
+
+    h1 {
+        text-align: center;
+        color: var(--azul);
+        margin-bottom: 30px;
+        font-weight: 600;
+    }
+
+    fieldset {
+        border: 1px solid var(--borde);
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+        background: #fafbfc;
+    }
+
+    legend {
+        padding: 0 10px;
+        font-weight: 600;
+        color: var(--azul);
+        font-size: 14px;
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 18px;
+    }
+
+    label {
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        display: block;
+        color: #4b4b4b;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--borde);
+        border-radius: 6px;
+        font-size: 13px;
+    }
+
+    input:focus {
+        outline: none;
+        border-color: var(--azul);
+        box-shadow: 0 0 0 3px rgba(11,60,111,0.15);
+    }
+
+    /* ===== BOTONES ADJUNTAR ===== */
+
+    .attach-col {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+
+
+    .btn-blue {
+        border: 2px solid var(--azul);
+        color: var(--azul);
+    }
+
+    .btn-green {
+        border: 2px solid var(--verde);
+        color: var(--verde);
+    }
+
+    .file-hidden {
+        display: none;
+    }
+
+    .actions {
+        text-align: right;
+        margin-top: 30px;
+    }
+
+    .file-hidden {
+    display: none;
+    }
+
+    .upload-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: 10px;
+    font-size: 0.95rem;
+    }
+
+    .upload-status .check {
+    color: #1aa34a; /* verde */
+    font-weight: 700;
+    font-size: 1.1rem;
+    }
+
+    .upload-status .file-name {
+    color: #2b2b2b;
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    }
+
+    .btn-outline {
+    margin-left: 10px;
+    background: transparent;
+    border: 1px solid #2b6cb0;
+    color: #2b6cb0;
+    padding: 6px 10px;
+    border-radius: 6px;
+    }
+
+    .file-attach {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Estado: por defecto oculto */
+.file-attach__status,
+.file-attach__btn--change,
+.file-attach__filename {
+  display: none;
+}
+
+.file-attach.is-ok .file-attach__status,
+.file-attach.is-ok .file-attach__btn--change,
+.file-attach.is-ok .file-attach__filename {
+  display: inline-flex;
+}
+
+.file-attach__status {
+  align-items: center;
+  gap: 6px;
+  color: #1a7f37; /* verde "ok" discreto */
+  font-size: 0.95em;
+}
+
+.file-attach__check {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #1a7f37;
+  border-radius: 50%;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.file-attach__filename {
+  font-size: 0.95em;
+  opacity: 0.85;
+}
+
+/* Botones: sin diseño pesado, para no chocar con tu UI */
+.file-attach__btn {
+  cursor: pointer;
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  background: transparent;
+  border-radius: 6px;
+}
+
+.file-attach__btn:active {
+  transform: translateY(1px);
+}
