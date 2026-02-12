@@ -331,47 +331,29 @@ def RegistroSumario_list(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
     
+@csrf_exempt
 def sumario_detalle(request, pk):
     r = get_object_or_404(RegistroSumario, pk=pk)
 
-    # RespuestaJuridica: puede no existir (OneToOne)
-    try:
-        resp = r.respuesta_juridica
-        respuesta_data = {
-            "id": resp.id,
-            "respuesta": resp.respuesta,
-            "fecha_termino": resp.fecha_termino.isoformat() if resp.fecha_termino else None,
-            "archivo": resp.archivo.url if resp.archivo else None,
-        }
-    except RespuestaJuridica.DoesNotExist:
-        respuesta_data = None
-
-    # Documentos: puede ser lista vacía (FK)
-    documentos = []
-    for d in r.documentos.all().order_by("-fecha_subida"):
-        documentos.append({
-            "id": d.id,
-            "nombre": d.nombre,
-            "fecha_subida": d.fecha_subida.isoformat() if d.fecha_subida else None,
-            "archivo": d.archivo.url if d.archivo else None,
-        })
-
     data = {
         "id": r.id,
-        "folio": r.folio,
-        "oficio": r.oficio,
+        "fecha_creacion": r.Fecha_creacion.isoformat() if r.Fecha_creacion else None,
+        "n_da": r.n_da,
+        "fecha_da": r.fecha_da.isoformat() if r.fecha_da else None,
+        "fiscal_acargo": r.fiscal_acargo,
+        "grado_fiscal": r.grado_fiscal,
         "materia": r.materia,
-        "fecha_oficio": r.fecha_oficio.isoformat() if r.fecha_oficio else None,
-        "fecha_respuesta": r.fecha_respuesta.isoformat() if r.fecha_respuesta else None,
-        "asignaciones": r.asignaciones or [],
-        "terminado": r.terminado,
-        "dirigido_a": r.dirigido_a,
-        "cc": r.cc,
-        "respuesta": r.respuesta,
-        "dias_transcurridos": r.dias_transcurridos,
-        "requiere_alerta": r.requiere_alerta,
-        "respuesta_juridica": respuesta_data,   # null si no hay
-        "documentos": documentos,               # [] si no hay
+        "nombre_apellido_grado_imputado": r.nombre_apellido_grado_imputado or [],
+        "oficio_fiscalia": r.oficio_fiscalia,
+        "fecha_fiscalia": r.fecha_fiscalia.isoformat() if r.fecha_fiscalia else None,
+        "adjunto_fiscalia": r.adjunto_fiscalia.url if r.adjunto_fiscalia else None,
+        "oficio_juridico": r.oficio_juridico,
+        "fecha_juridico": r.fecha_juridico.isoformat() if r.fecha_juridico else None,
+        "adjunto_juridico": r.adjunto_juridico.url if r.adjunto_juridico else None,
+        "sancion": r.sancion,
+        "adjunto_sancion": r.adjunto_sancion.url if r.adjunto_sancion else None,
+        "fecha_contrata": r.fecha_contrata.isoformat() if r.fecha_contrata else None,
+        "finalizado": r.finalizado,
     }
 
     return JsonResponse(data, json_dumps_params={"ensure_ascii": False})

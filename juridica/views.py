@@ -251,22 +251,25 @@ def crear_registro_2(request):
     }
     if request.method == "POST":
 
+        sancion_index = int(request.POST.getlist("sancion")[0]) - 1 if request.POST.getlist("sancion") else 0
+        sancion_value = SACCIONES[sancion_index] if 0 <= sancion_index < len(SACCIONES) else ""
+
         registro = RegistroSumario.objects.create(
             Fecha_creacion=request.POST.get("fecha_creacion") or None,
-            n_da = request.POST.get("n_da", "").strip(),
-            fecha_da = request.POST.get("fecha_da") or None,
-            fiscal_acargo = request.POST.get("fiscal", "").strip(),
-            grado_fiscal = request.POST.get("grado_fiscal", "").strip(),
-            materia = request.POST.get("materia", "").strip(),
-            oficio_fiscalia = request.POST.get("oficio_vista_fiscal", "").strip(),
-            fecha_fiscalia = request.POST.get("fecha_vista_fiscal") or None,
-            adjunto_fiscalia = request.FILES.get("adjunto_fiscalia"),
-            oficio_juridico = request.POST.get("oficio_juridico", "").strip(),
-            fecha_juridico = request.POST.get("fecha_juridico") or None,
-            adjunto_juridico = request.FILES.get("adjunto_juridico"),
-            sancion = request.POST.getlist("sancion")[0] if request.POST.getlist("sancion") else "",
-            adjunto_sancion = request.FILES.get("adjunto_sancion"),
-            fecha_contrata = request.POST.get("fecha_contrata") or None,
+            n_da=request.POST.get("n_da", "").strip(),
+            fecha_da=request.POST.get("fecha_da") or None,
+            fiscal_acargo=request.POST.get("fiscal", "").strip(),
+            grado_fiscal=request.POST.get("grado_fiscal", "").strip(),
+            materia=request.POST.get("materia", "").strip(),
+            oficio_fiscalia=request.POST.get("oficio_vista_fiscal", "").strip(),
+            fecha_fiscalia=request.POST.get("fecha_vista_fiscal") or None,
+            adjunto_fiscalia=request.FILES.get("adjunto_fiscalia"),
+            oficio_juridico=request.POST.get("oficio_juridico", "").strip(),
+            fecha_juridico=request.POST.get("fecha_juridico") or None,
+            adjunto_juridico=request.FILES.get("adjunto_juridico"),
+            sancion=sancion_value,
+            adjunto_sancion=request.FILES.get("adjunto_sancion"),
+            fecha_contrata=request.POST.get("fecha_contrata") or None,
         )
 
         nombres = request.POST.getlist("nombre[]")
