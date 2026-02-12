@@ -43,7 +43,7 @@ ASIGNACIONES = [
 ]
 
 SACCIONES = [
-    "1.-indagatoria o investigativa.",
+    "1.- indagatoria o investigativa.",
     "2.- formulación de encargos o etapa acusatoria",
     "3.- periodo de descargos y/o periodo de prueba",
     "4.- informe del fiscal",
