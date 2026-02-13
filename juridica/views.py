@@ -188,7 +188,7 @@ def reiterar_oficio(request, id):
         dirigido = request.POST.get("dirigido", "").strip()
         copia = request.POST.get("copia", "").strip()
         respuesta = request.POST.get("respuesta", "").strip()
-        archivos = request.FILES.getlist("adjuntos")
+        archivos = request.FILES.getlist("archivos")
 
         # Validaciones mínimas (evita intentar SMTP con vacío)
         if not usuario or not contraseña:
@@ -203,12 +203,6 @@ def reiterar_oficio(request, id):
         cc = [e.strip() for e in copia.split(",") if e.strip()] if copia else []
 
         try:
-            # 1) Guarda cambios en DB rápido
-            with transaction.atomic():
-                registro.dirigido_a = dirigido
-                registro.cc = copia
-                registro.respuesta = respuesta
-                registro.save()
 
             # 2) Envía correo fuera de la transacción
             print(f"[reiterar_oficio] Enviando correo. to={len(destinatarios)} cc={len(cc)} adj={len(archivos)} usuario={usuario!r}")
@@ -222,6 +216,20 @@ def reiterar_oficio(request, id):
                 archivos=archivos
             )
             print("[reiterar_oficio] Correo enviado OK")
+
+            # 3) Mensaje Guardar el registro
+
+            reitero = ReiterarJuridica.objects.create(
+                registro=registro,
+                respuesta=respuesta,
+                correos=dirigido,
+                copias_correos=copia
+            )
+            reitero.save()
+            Archivo_reitero_Adjunto.objects.bulk_create([
+                Archivo_reitero_Adjunto(reitero=reitero, archivo=f) for f in archivos
+            ])
+
 
             messages.success(request, "Correo enviado correctamente.")
             return redirect("lista_registros")

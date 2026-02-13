@@ -123,12 +123,20 @@
                     <textarea id="respuesta" name="respuesta" placeholder="Escriba la respuesta o mensaje aquí..." required></textarea>
                 </div>
 
-                <div>
-                    <label for="adjuntos">Adjuntos</label>
-                    <div class="file-row">
-                        <input id="adjuntos" name="adjuntos" class="file-btn" type="file" multiple>
-                        <div id="fileInfo" class="file-info" aria-live="polite">Ningún archivo seleccionado</div>
+                <div class="row" style="margin-top: 20px;">
+                    <div class="col" style="width: 100%;">
+                        <label>Documentos</label>
                     </div>
+                </div>
+
+                <div>                
+
+                    <div id="drop-area" class="p-4 border rounded text-center" style="background:#fff; cursor:pointer;">
+                        <button type="button" id="browse-btn" class="btn btn-azul">Subir Documentos</button>
+                        <input id="file-input" type="file" name="archivos" multiple style="display: none;" />
+                    </div>
+
+                    <ul id="file-list" class="list-group mt-3"></ul>  
                 </div>
 
                 <div class="actions">
@@ -154,6 +162,7 @@
         });
     </script>
 
+<script src="{% static 'js/archivo_adjunto.js' %}"></script>
 <script src="{% static 'js/limite_fecha.js' %}"></script>
 
 </div>

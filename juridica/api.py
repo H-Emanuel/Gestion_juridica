@@ -25,6 +25,22 @@ def registro_detalle_api(request, pk):
     except RespuestaJuridica.DoesNotExist:
         respuesta_data = None
 
+    # ReiterarJuridica: puede no existir (FK)
+    reiteraciones = []
+    for reitero in r.reiteraciones.all().order_by("-fecha_de_envio"):
+        reitero_data = {
+            "respuesta": reitero.respuesta,
+            "correos": reitero.correos,
+            "copias_correos": reitero.copias_correos,
+            "fecha_de_envio": reitero.fecha_de_envio.isoformat() if reitero.fecha_de_envio else None,
+            "archivos": [
+                {
+                    "archivo": archivo.archivo.url if archivo.archivo else None,
+                } for archivo in reitero.archivos_reitero.all()
+            ]
+        }
+        reiteraciones.append(reitero_data)
+
     # Documentos: puede ser lista vacía (FK)
     documentos = []
     for d in r.documentos.all().order_by("-fecha_subida"):
@@ -51,6 +67,7 @@ def registro_detalle_api(request, pk):
         "requiere_alerta": r.requiere_alerta,
         "respuesta_juridica": respuesta_data,   # null si no hay
         "documentos": documentos,               # [] si no hay
+        "reiteraciones": reiteraciones,          # [] si no hay
     }
 
     return JsonResponse(data, json_dumps_params={"ensure_ascii": False})
