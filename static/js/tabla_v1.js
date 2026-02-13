@@ -54,25 +54,26 @@ $(document).ready(function () {
           let html = visibles.map(chip).join("");
           if (restantes > 0) html += `<span class="text-muted">+${restantes}</span>`;
 
-          return html;
-        }
-      },
-      { data: "fecha_oficio" },
-      { data: "fecha_respuesta" },
-      {
-        data: "dias_transcurridos",
-        render: function (data, type) {
-          if (type !== 'display') return data;
-          if (data === null || data === undefined || data === "") return "—";
-          const clase = (data >= 3) ? "bg-success" : "bg-danger";
-          return `<span class="badge ${clase}">${data} días</span>`;
-        }
-      },
-      {
-        data: null,
-        orderable: false,
-        searchable: false,
-        render: function (data, type, row) {
+            return html;
+          }
+          },
+          { data: "fecha_oficio" },
+          { data: "fecha_respuesta" },
+          {
+          data: "dias_transcurridos",
+          render: function (data, type) {
+            if (type !== 'display') return data;
+            if (data === null || data === undefined || data === "") return "—";
+            const clase = (data >= 3) ? "bg-success" : "bg-danger";
+            const dias = Math.abs(data); // Quitar el signo negativo
+            return data < 0 ? `<span class="badge ${clase}">${dias} días atrasados</span>` : `<span class="badge ${clase}">${dias} días</span>`;
+          }
+          },
+          {
+          data: null,
+          orderable: false,
+          searchable: false,
+          render: function (data, type, row) {
           if (type !== 'display') return null;
           return `
             <a href="/eliminar/${row.id}/" class="btn btn-rojo btn-tooltip" title="Eliminar" onclick="return confirm('¿Eliminar registro?')">❌</a>
