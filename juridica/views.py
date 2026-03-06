@@ -6,19 +6,36 @@ from datetime import date, datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
-from .function import enviar_correo_smtp
+from .function import enviar_correo_smtp,obtener_perfil_usuario
 from django.contrib import messages
 from django.db.models import Max
+from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.http import JsonResponse
+import json
 
+@login_required(login_url='login')
+
+
+
+
+@login_required(login_url='login')
 def lista_registros(request):
     query = request.GET.get("q")
-    
+    usuario = request.user
+    perfiles = obtener_perfil_usuario(usuario)
+
+    perfiles_nombres = list(perfiles.values_list("perfil__nombre", flat=True))
+
+    perfil = perfiles_nombres[0] if perfiles_nombres else None
+
     if query:
         registros = RegistroJuridico.objects.filter(materia__icontains=query)
     else:
         registros = RegistroJuridico.objects.all()
 
-    return render(request, "lista.html", {"registros": registros})
+    return render(request, "lista.html", {"registros": registros, "perfil": perfil})
 
 ASIGNACIONES = [
     "Administración Municipal",
@@ -42,15 +59,24 @@ ASIGNACIONES = [
     "Otro",
 ]
 
-SACCIONES = [
+ETAPAS = [
     "1.- indagatoria o investigativa.",
     "2.- formulación de encargos o etapa acusatoria",
     "3.- periodo de descargos y/o periodo de prueba",
     "4.- informe del fiscal",
 ]
 
-@csrf_exempt
+SACCIONES = [
+    "1.- Censura",
+    "2.- Multa",
+    "3.- Suspensión del empleo desde treinta Dias a tres meses",
+    "4.- Destitución",
+]
+
+@login_required(login_url='login')
 def crear_registro(request):
+    usuario = request.user
+
     if request.method == "POST":
         try:
             with transaction.atomic():
@@ -97,12 +123,21 @@ def crear_registro(request):
             })
 
     return render(request, "formulario.html", {
-            "asignaciones": ASIGNACIONES
+            "asignaciones": ASIGNACIONES,
+
         })
+
+def logout_view(request):
+    from django.contrib.auth import logout
+    logout(request)
+    return redirect("login")
+    
 
 @csrf_exempt
 def registro_editar(request, id):
     registro = get_object_or_404(RegistroJuridico, id=id)
+    
+
 
     if request.method == "POST":
         # campos simples
@@ -166,6 +201,8 @@ def registro_editar(request, id):
         "documentos": registro.documentos.all().order_by("-fecha_subida"),
     })
 
+
+@login_required(login_url='login')
 def documento_eliminar(request, doc_id):
     doc = get_object_or_404(Documento, pk=doc_id)
     reg_id = doc.registro_id
@@ -178,6 +215,7 @@ def documento_eliminar(request, doc_id):
     messages.success(request, "Documento eliminado.")
     return redirect("registro_editar", pk=reg_id)
 
+@login_required(login_url='login')
 @csrf_exempt
 def reiterar_oficio(request, id):
     registro = get_object_or_404(RegistroJuridico, id=id)
@@ -242,25 +280,25 @@ def reiterar_oficio(request, id):
 
     return render(request, "reiterar.html", {"registro": registro})
 
-@csrf_exempt
+@login_required(login_url='login')
 def eliminar_registro(request, id):
     registro = get_object_or_404(RegistroJuridico, id=id)
     registro.delete()
     return redirect("lista_registros")
 
 # SUMARIOS
-@csrf_exempt
+@login_required(login_url='login')
 def crear_registro_2(request):
     next_id = (RegistroSumario.objects.aggregate(m=Max("id"))["m"] or 0) + 1
 
     context = {
-        "SACCIONES": SACCIONES,
+        "ETAPAS": ETAPAS,
         "registro_id": next_id,
     }
     if request.method == "POST":
 
-        sancion_index = int(request.POST.getlist("sancion")[0]) - 1 if request.POST.getlist("sancion") else 0
-        sancion_value = SACCIONES[sancion_index] if 0 <= sancion_index < len(SACCIONES) else ""
+        etapa_index = int(request.POST.getlist("etapa")[0]) - 1 if request.POST.getlist("etapa") else 0
+        etapa_value = ETAPAS[etapa_index] if 0 <= etapa_index < len(ETAPAS) else ""
 
         registro = RegistroSumario.objects.create(
             Fecha_creacion=request.POST.get("fecha_creacion") or None,
@@ -275,7 +313,7 @@ def crear_registro_2(request):
             oficio_juridico=request.POST.get("oficio_juridico", "").strip(),
             fecha_juridico=request.POST.get("fecha_juridico") or None,
             adjunto_juridico=request.FILES.get("adjunto_juridico"),
-            sancion=sancion_value,
+            etapa=etapa_value,
             adjunto_sancion=request.FILES.get("adjunto_sancion"),
             fecha_contrata=request.POST.get("fecha_contrata") or None,
         )
@@ -294,20 +332,61 @@ def crear_registro_2(request):
 
     return render(request, "formulario_2.html", context)
 
+
+@login_required(login_url='login')
 def eliminar_sumario(request, id):
     registro = get_object_or_404(RegistroSumario, id=id)
     registro.delete()
     return redirect("lista_registros")
+
+@csrf_exempt
+def asignar_usuario(request, id=None):
+    if request.method != "POST":
+        return JsonResponse({"ok": False, "error": "Método no permitido"}, status=405)
+
+    try:
+        data = json.loads(request.body.decode("utf-8")) if request.body else {}
+    except json.JSONDecodeError:
+        data = {}
+
+    registro_id = data.get("registro_id") or id or request.POST.get("registro_id")
+    usuario_id = data.get("usuario_id") or request.POST.get("usuario_id")
+
+    if not registro_id or not usuario_id:
+        return JsonResponse({"ok": False, "error": "Faltan registro_id o usuario_id"}, status=400)
+
+    try:
+        registro = RegistroJuridico.objects.get(id=registro_id)
+        usuario = User.objects.get(id=usuario_id)
+    except RegistroJuridico.DoesNotExist:
+        return JsonResponse({"ok": False, "error": "Registro no encontrado"}, status=404)
+    except User.DoesNotExist:
+        return JsonResponse({"ok": False, "error": "Usuario no encontrado"}, status=404)
+
+    registro.funcionario_asignado = usuario
+    registro.save(update_fields=["funcionario_asignado"])
+
+    return JsonResponse(
+        {"ok": True, "message": f"Usuario {usuario.username} asignado.", "registro_id": registro.id}
+    )
+
 
 
 
 # Login simple (sin auth ni nada, solo para demo)
 @csrf_exempt
 def login(request):
-    print("Login view accessed")
     if request.method == "POST":
-        print("Login view accessed")
-
-        return redirect("lista_registros")
-
+        username = request.POST.get("username", "").strip()
+        password = request.POST.get("password", "").strip()
+        
+        user = authenticate(request, username=username, password=password)
+        
+        if user is not None:
+            auth_login(request, user)
+            return redirect("lista_registros")
+        else:
+            messages.error(request, "Usuario o contraseña inválidos.")
+            return render(request, "login.html")
+    
     return render(request, "login.html")

@@ -54,6 +54,14 @@ class RegistroJuridico(models.Model):
     cc = models.CharField(max_length=255, blank=True)
     respuesta = models.TextField(blank=True)
 
+    funcionario_asignado = models.OneToOneField(
+        'auth.User',
+        related_name='registro_asignado',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+
 
     def __str__(self):
         return f"{self.folio} - {self.oficio}"
@@ -158,32 +166,40 @@ def archivo_upload_to_sumario(instance, filename):
 
     return os.path.join(f"sumario.{safe_folio}", model_folder, final_name)
 
-
 class RegistroSumario(models.Model):
     id = models.AutoField(primary_key=True)
     Fecha_creacion = models.DateField()
 
-    n_da = models.TextField()
-    fecha_da = models.DateField()
-    fiscal_acargo = models.CharField(max_length=100)
-    grado_fiscal = models.CharField(max_length=50)
+    n_da = models.TextField(blank=True, null=True)
+    fecha_da = models.DateField(blank=True, null=True)
+    fiscal_acargo = models.CharField(max_length=100, blank=True, null=True)
+    grado_fiscal = models.CharField(max_length=50, blank=True, null=True)
 
-    materia = models.TextField()
+    materia = models.TextField(blank=True, null=True)
 
     nombre_apellido_grado_imputado = models.JSONField(default=list, blank=True)
 
-    oficio_fiscalia = models.CharField(max_length=100)
-    fecha_fiscalia = models.DateField()
+    oficio_fiscalia = models.CharField(max_length=100, blank=True, null=True)
+    fecha_fiscalia = models.DateField(blank=True, null=True)
     adjunto_fiscalia = models.FileField(upload_to=archivo_upload_to_sumario, null=True, blank=True)
    
-    oficio_juridico = models.CharField(max_length=100)
-    fecha_juridico = models.DateField()
+    fecha_notificacion_fiscal = models.DateField(blank=True, null=True)
+    
+
+    oficio_juridico = models.CharField(max_length=100, blank=True, null=True)
+    fecha_juridico = models.DateField(blank=True, null=True)
     adjunto_juridico = models.FileField(upload_to=archivo_upload_to_sumario, null=True, blank=True)
 
-    sancion = models.CharField(max_length=100, blank=True)
+    sancion = models.CharField(max_length=100, blank=True, null=True)
     adjunto_sancion = models.FileField(upload_to=archivo_upload_to_sumario, null=True, blank=True)
 
+    etapa = models.CharField(max_length=100, blank=True, null=True)
+    
     fecha_contrata = models.DateField(null=True, blank=True)
+
+    oficio_adjunto = models.FileField(upload_to=archivo_upload_to_sumario, blank=True, null=True)
+    oficio_fecha = models.DateField(blank=True, null=True)
+
 
     finalizado = models.BooleanField(default=False)
 
@@ -193,12 +209,14 @@ class RegistroSumario(models.Model):
         1) Guardamos sin archivos para obtener PK
         2) Reasignamos archivos y guardamos de nuevo
         """
-        if self.pk is None and (self.adjunto_fiscalia or self.adjunto_juridico):
+        if self.pk is None and (self.adjunto_fiscalia or self.adjunto_juridico or self.oficio_adjunto):
             af = self.adjunto_fiscalia
             aj = self.adjunto_juridico
+            oa = self.oficio_adjunto
 
             self.adjunto_fiscalia = None
             self.adjunto_juridico = None
+            self.oficio_adjunto = None
             super().save(*args, **kwargs)  # crea PK
 
             self.adjunto_fiscalia = af
@@ -206,7 +224,6 @@ class RegistroSumario(models.Model):
             return super().save(update_fields=["adjunto_fiscalia", "adjunto_juridico"])
 
         return super().save(*args, **kwargs)
-
 
 class DocumentoSumario(models.Model):
     sumario = models.ForeignKey(
@@ -226,3 +243,58 @@ class DocumentoSumario(models.Model):
         if not self.nombre and self.archivo and getattr(self.archivo, "file", None):
             self.nombre = os.path.basename(getattr(self.archivo.file, "name", self.archivo.name))
         super().save(*args, **kwargs)
+
+
+class Perfil(models.Model):
+    PERFILES_PREDETERMINADOS = [
+        {'nombre': 'Admin', 'permisos': ['crear', 'editar', 'eliminar', 'ver']},
+        {'nombre': 'Usuario Normal', 'permisos': ['crear', 'editar', 'ver']},
+        {'nombre': 'Visualizador', 'permisos': ['ver']},
+    ]
+    
+    nombre = models.CharField(max_length=100, unique=True)
+    permisos = models.JSONField(default=list, blank=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.nombre
+
+    @classmethod
+    def crear_perfiles_predeterminados(cls):
+        """Crea los perfiles por defecto si no existen"""
+        for perfil_data in cls.PERFILES_PREDETERMINADOS:
+            cls.objects.get_or_create(
+                nombre=perfil_data['nombre'],
+                defaults={'permisos': perfil_data['permisos']}
+            )
+
+
+class UsuarioPerfil(models.Model):
+    usuario = models.OneToOneField(
+        'auth.User',
+        related_name='perfil_usuario',
+        on_delete=models.CASCADE
+    )
+    perfil = models.ForeignKey(
+        Perfil,
+        related_name='usuarios',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    fecha_asignacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.usuario.username} - {self.perfil.nombre if self.perfil else 'Sin perfil'}"
+
+    @classmethod
+    def crear_perfil_usuario(cls, usuario):
+        """Asigna automáticamente el perfil con ID 2 al nuevo usuario"""
+        try:
+            perfil_default = Perfil.objects.get(pk=2)
+            cls.objects.get_or_create(
+                usuario=usuario,
+                defaults={'perfil': perfil_default}
+            )
+        except Perfil.DoesNotExist:
+            pass

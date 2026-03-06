@@ -2,7 +2,6 @@ from .models import *
 from django.db.models import Q
 from django.core.paginator import Paginator
 from datetime import date
-from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from datetime import date, timedelta
 import requests
@@ -35,6 +34,7 @@ def registro_detalle_api(request, pk):
             "fecha_de_envio": reitero.fecha_de_envio.isoformat() if reitero.fecha_de_envio else None,
             "archivos": [
                 {
+                    "id": archivo.id,
                     "archivo": archivo.archivo.url if archivo.archivo else None,
                 } for archivo in reitero.archivos_reitero.all()
             ]
@@ -91,6 +91,7 @@ def RegistroJuridico_list(request):
             "fecha_oficio",
             "fecha_respuesta",
             "asignacion",
+            "N° de reiteraciones",
         ]
 
         if order_column_index < 0 or order_column_index >= len(columns):
@@ -100,7 +101,22 @@ def RegistroJuridico_list(request):
         if order_dir == "desc":
             order_column = f"-{order_column}"
 
-        registros = RegistroJuridico.objects.filter(terminado=False)
+        user = request.user
+        
+        # Verificar si el usuario es Admin
+        try:
+            user_perfil = UsuarioPerfil.objects.get(usuario=user)
+            es_admin = user_perfil.perfil.nombre == 'admin'
+        except UsuarioPerfil.DoesNotExist:
+            es_admin = False
+        
+        if es_admin:
+            registros = RegistroJuridico.objects.filter(terminado=False)
+        else:
+            registros = RegistroJuridico.objects.filter(
+            terminado=False,
+            funcionario_asignado=user
+            )
 
         if search_value:
             registros = registros.filter(
@@ -129,20 +145,30 @@ def RegistroJuridico_list(request):
         for r in page:
             if r.fecha_respuesta:
                 base = date.today()
-                dias = 0
+                days = 0
                 current = r.fecha_respuesta
 
-                while current < base:
-                    # solo lunes-viernes y NO feriado
-                    if current.weekday() < 5 and current.strftime("%Y-%m-%d") not in holidays:
-                        dias -= 1
+                # fecha_respuesta en el futuro => positivo
+                if current > base:
+                    while current > base:
+                        if current.weekday() < 5 and current.strftime("%Y-%m-%d") not in holidays:
+                            days += 1
+                        current -= timedelta(days=1)
 
-                    # SIEMPRE avanzar 1 día
-                    current += timedelta(days=1)
+                # fecha_respuesta en el pasado => negativo
+                elif current < base:
+                    while current < base:
+                        if current.weekday() < 5 and current.strftime("%Y-%m-%d") not in holidays:
+                            days -= 1
+                        current += timedelta(days=1)
+
+                # fecha_respuesta == hoy
+                else:
+                    days = 0
             else:
-                dias = None
+                days = None
 
-
+            print(f"Registro {r.id}: Dias transcurridos calculados = {days}")
             data.append({
                 "id": r.id,
                 "folio": r.folio,
@@ -150,7 +176,9 @@ def RegistroJuridico_list(request):
                 "asignaciones": r.asignaciones,  # truncamos en el frontend
                 "fecha_oficio": r.fecha_oficio.strftime("%d-%m-%Y") if r.fecha_oficio else "",
                 "fecha_respuesta": r.fecha_respuesta.strftime("%d-%m-%Y") if r.fecha_respuesta else "—",
-                "dias_transcurridos": dias,
+                "dias_transcurridos": days,
+                "reiteraciones": r.reiteraciones.count(),
+                "funcionario_asignado": r.funcionario_asignado.username if r.funcionario_asignado else None,
             })
 
         response = {
@@ -181,6 +209,7 @@ def RegistroJuridico_terminado_list(request):
             "asignaciones",
             "fecha_oficio",
             "fecha_respuesta",
+            "N° de reiteraciones",
         ]
 
         if order_column_index < 0 or order_column_index >= len(columns):
@@ -190,7 +219,21 @@ def RegistroJuridico_terminado_list(request):
         if order_dir == "desc":
             order_column = f"-{order_column}"
 
-        registros = RegistroJuridico.objects.filter(terminado=True)
+        user = request.user
+
+        try:
+            user_perfil = UsuarioPerfil.objects.get(usuario=user)
+            es_admin = user_perfil.perfil.nombre == 'admin'
+        except UsuarioPerfil.DoesNotExist:
+            es_admin = False
+        
+        if es_admin:
+            registros = RegistroJuridico.objects.filter(terminado=True)
+        else:
+            registros = RegistroJuridico.objects.filter(
+            terminado=True,
+            funcionario_asignado=user
+            )
 
         if search_value:
             registros = registros.filter(
@@ -224,6 +267,8 @@ def RegistroJuridico_terminado_list(request):
                 "fecha_oficio": r.fecha_oficio.strftime("%d-%m-%Y") if r.fecha_oficio else "",
                 "fecha_respuesta": r.fecha_respuesta.strftime("%d-%m-%Y") if r.fecha_respuesta else "—",
                 "dias_transcurridos": dias,
+                "reiteraciones": r.reiteraciones.count(),
+
             })
 
         response = {
@@ -374,3 +419,23 @@ def sumario_detalle(request, pk):
     }
 
     return JsonResponse(data, json_dumps_params={"ensure_ascii": False})
+
+@csrf_exempt
+def Usuario_list(request):
+    
+    try:
+        usuarios = UsuarioPerfil.objects.filter(perfil_id=2)
+        data = [
+            {
+            "id": u.usuario.id,
+            "username": u.usuario.username,
+            "email": u.usuario.email,
+            "perfil": u.perfil.nombre if u.perfil else None,
+            "fecha_asignacion": u.fecha_asignacion.isoformat() if u.fecha_asignacion else None,
+            }
+            for u in usuarios
+        ]
+       
+        return JsonResponse(data, safe=False)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

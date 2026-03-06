@@ -25,4 +25,10 @@ urlpatterns = [
     path("login/", views.login, name="login"),
 
 
+    # ASIGNAR USUARIOS
+    path("api/usuarios/", api.Usuario_list, name="api_usuarios"),
+    path("api/asignar/", views.asignar_usuario, name="api_asignar_usuario"),
+
+    # LOGOUT
+    path("logout/", views.logout_view, name="logout"),
 ]

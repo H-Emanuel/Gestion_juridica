@@ -78,6 +78,17 @@
             </button>
         </fieldset>
 
+
+        <fieldset>
+            <legend>Notificaciones Fiscal</legend>
+            <div class="row">
+                <div>
+                    <label>Fecha</label>
+                    <input type="date" name="fecha_notificacion_fiscal" required>
+                </div>
+            </div>
+        </fieldset>
+
         <fieldset>
             <legend>Vista Fiscal</legend>
             <div class="row">
@@ -113,7 +124,7 @@
         </fieldset>
 
         <!-- DIRECTOR JURÍDICO -->
-        <fieldset>
+        <!-- <fieldset>
             <legend>Informe de Legalidad de la Dirección Jurídica</legend>
             <div class="row">
                 <div>
@@ -148,48 +159,22 @@
         </fieldset>
 
         <fieldset>
-        
-            <legend>Sanción Aplicada</legend>
-        <div class="row">
-            <div>
-                <label>Sanción</label>
-                <select name="sancion" required>
-                    <option value="">-- Seleccionar sanción --</option>
-                    {% for sancion in SACCIONES %}
-                        <option value="{{ forloop.counter }}">{{ sancion }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-
-            <div class="attach-col">
-                <div class="file-attach" data-name="adjunto_3">
-                    <input class="file-attach__input" type="file" name="adjunto_sancion" hidden>
-
-                    <button type="button" class="file-attach__btn file-attach__btn--select">
-                    Adjuntar archivo
-                    </button>
-
-                    <span class="file-attach__status" aria-live="polite">
-                    <span class="file-attach__check" aria-hidden="true">✓</span>
-                    <span class="file-attach__text">Archivo cargado</span>
-                    </span>
-
-                    <span class="file-attach__filename"></span>
-
-                    <button type="button" class="file-attach__btn file-attach__btn--change">
-                    Cambiar
-                    </button>
-                </div>
-            </div>
-
-
-        </div>
-        </fieldset>
-
-        <fieldset>
             <legend>Contraloría Regional</legend>
             <label>Fecha Registro</label>
             <input type="date" name="fecha_contrata">
+        </fieldset> -->
+
+        <fieldset>
+            <legend>Etapa Actual</legend>
+                    <div>
+                        <label>Etapa</label>
+                        <select name="etapa" required>
+                            <option value="">-- Seleccionar etapa --</option>
+                            {% for etapa in ETAPAS %}
+                                <option value="{{ forloop.counter }}">{{ etapa }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
         </fieldset>
 
         <div class="actions">

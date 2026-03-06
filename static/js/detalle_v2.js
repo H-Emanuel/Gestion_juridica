@@ -12,6 +12,7 @@
 
     const $modal = $("#" + MODAL_ID);
     $modal.attr("data-registro-id", id);
+    
     $modal.modal("show");
 
     // pinta loading al tiro
@@ -127,14 +128,14 @@
       ${
       respuestaJ
       ? ` 
-        <p><strong>Fecha término:</strong> ${esc(respuestaJ.fecha_termino || "—")}</p>
-        <p><strong>Respuesta:</strong></p>
-        <div style="white-space:pre-wrap;">${esc(respuestaJ.respuesta || "—")}</div>
-        ${
-        respuestaJ.archivo
-        ? `<p style="margin-top:10px;"><a class="btn btn-azul" href="${esc(respuestaJ.archivo)}" target="_blank">📎 Ver archivo</a></p>`
-        : `<p class="text-muted">Sin archivo adjunto</p>`
-        }
+      <p><strong>Fecha término:</strong> ${esc(respuestaJ.fecha_termino || "—")}</p>
+      <p><strong>Respuesta:</strong></p>
+      <div style="white-space:pre-wrap;">${esc(respuestaJ.respuesta || "—")}</div>
+      ${
+      respuestaJ.archivo
+      ? `<p style="margin-top:10px;"><a class="btn btn-azul" href="${esc(respuestaJ.archivo)}" target="_blank">📎 Ver archivo</a></p>`
+      : `<p class="text-muted">Sin archivo adjunto</p>`
+      }
       `
       : `<p class="text-muted">No hay respuesta jurídica asociada.</p>`
       }
@@ -145,24 +146,24 @@
       ${
       reiteraciones.length
       ? `
-        <ul style="padding-left:18px;">
-        ${reiteraciones.map(reitero => `
-        <li>
-          <strong>Fecha de envío:</strong> ${esc(reitero.fecha_de_envio || "—")}<br>
-          <strong>Respuesta:</strong> ${esc(reitero.respuesta || "—")}<br>
-          <strong>Correos:</strong> ${esc(reitero.correos || "—")}<br>
-          <strong>Copias:</strong> ${esc(reitero.copias_correos || "—")}<br>
-          ${reitero.archivos.length ? `
-          <strong>Archivos:</strong>
-          <ul>
-            ${reitero.archivos.map(archivo => `
-            <li><a href="${esc(archivo.archivo)}" target="_blank">Descargar archivo</a></li>
-            `).join("")}
-          </ul>
-          ` : `<p class="text-muted">Sin archivos.</p>`}
-        </li>
-        `).join("")}
-        </ul>
+      <ul style="padding-left:18px;">
+      ${reiteraciones.map((reitero, index) => `
+      <li>
+      <strong>N° de reítero: ${index + 1}</strong> - <strong>Fecha de envío:</strong> ${esc(reitero.fecha_de_envio || "—")}<br>
+      <strong>Respuesta:</strong> ${esc(reitero.respuesta || "—")}<br>
+      <strong>Correos:</strong> ${esc(reitero.correos || "—")}<br>
+      <strong>Copias:</strong> ${esc(reitero.copias_correos || "—")}<br>
+      ${reitero.archivos.length ? `
+      <strong>Archivos:</strong>
+      <ul>
+      ${reitero.archivos.map(archivo => `
+      <li><a href="${esc(archivo.archivo)}" target="_blank">Descargar archivo</a></li>
+      `).join("")}
+      </ul>
+      ` : `<p class="text-muted">Sin archivos.</p>`}
+      </li>
+      `).join("")}
+      </ul>
       `
       : `<p class="text-muted">Sin reiteraciones.</p>`
       }
@@ -173,15 +174,15 @@
       ${
       docs.length
       ? `
-        <ul style="padding-left:18px;">
-        ${docs.map(doc => `
-        <li>
-        ${esc(doc.nombre || "Documento")}
-        ${doc.archivo ? ` - <a href="${esc(doc.archivo)}" target="_blank">descargar</a>` : ""} 
-        ${doc.fecha_subida ? ` <small class="text-muted">(${esc(doc.fecha_subida)})</small>` : ""}
-        </li>
-        `).join("")}
-        </ul>
+      <ul style="padding-left:18px;">
+      ${docs.map(doc => `
+      <li>
+      ${esc(doc.nombre || "Documento")}
+      ${doc.archivo ? ` - <a href="${esc(doc.archivo)}" target="_blank">descargar</a>` : ""} 
+      ${doc.fecha_subida ? ` <small class="text-muted">(${esc(doc.fecha_subida)})</small>` : ""}
+      </li>
+      `).join("")}
+      </ul>
       `
       : `<p class="text-muted">Sin documentos.</p>`
       }

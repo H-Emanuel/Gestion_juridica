@@ -2,6 +2,7 @@ import smtplib
 import socket
 from email.message import EmailMessage
 from email.utils import formataddr
+from .models import UsuarioPerfil,Perfil
 
 def enviar_correo_smtp(usuario, contraseña, asunto, cuerpo, destinatarios, cc=None, archivos=None):
     smtp_correo = f"{usuario}@munivalpo.cl"
@@ -43,3 +44,11 @@ def enviar_correo_smtp(usuario, contraseña, asunto, cuerpo, destinatarios, cc=N
     except (smtplib.SMTPException, socket.timeout, OSError) as e:
         # No tumbar gunicorn: sube un error manejable
         raise Exception(f"Error enviando correo SMTP: {e}")
+
+
+def obtener_perfil_usuario(usuario):
+
+    user_perfiles = UsuarioPerfil.objects.filter(usuario=usuario)
+    if not user_perfiles.exists():
+        return None
+    return user_perfiles

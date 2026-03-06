@@ -22,9 +22,11 @@
 }
 
 </style>
+<script>
+      window.userPerfil = "{% if request.user.is_superuser %}admin{% else %}usuario{% endif %}";
+</script>
 
-
-<!-- 
+{% if perfil == 'admin' %}
 <div class="mx-3">
   <div class="btn-group" role="group">
     <input type="radio" class="btn-check" name="vistaSel" id="folioView" value="folio" checked>
@@ -33,7 +35,8 @@
     <input type="radio" class="btn-check" name="vistaSel" id="sumarioView" value="sumario">
     <label class="btn btn-outline-secondary" for="sumarioView">Sumario</label>
   </div>
-</div> -->
+</div> 
+{% endif %}
 
 <div class="sheet-wrap mt-3" id="sheetWrap">
   <div id="folioCard" class="card p-4 view-panel is-active">
@@ -62,6 +65,7 @@
           <th>Fecha Respuesta Prevista</th>
           <th>Días transcurridos</th>
           <th>Acciones</th>
+          <th>N° de reiteraciones</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -79,6 +83,7 @@
             <th>Fecha Oficio</th>
             <th>Fecha Respuesta</th>
             <th>Acciones</th>
+            <th>N° de reiteraciones</th>
 
           </tr>
         </thead>
@@ -166,11 +171,13 @@
 
 
 
-<script src="{% static 'js/tabla_v1.js' %}"></script>
+<script src="{% static 'js/tabla_v2.js' %}"></script>
 <script src="{% static 'js/tabla_sumario.js' %}"></script>
 
-<script src="{% static 'js/detalle_v1.js' %}"></script>
+<script src="{% static 'js/detalle_v2.js' %}"></script>
 <script src="{% static 'js/detalle_sumario.js' %}"></script>
 
+
+<script src="{% static 'js/asignar_usuario.js' %}"></script>
 
 {% endblock %}

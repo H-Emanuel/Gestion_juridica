@@ -55,35 +55,48 @@ $(document).ready(function () {
           if (restantes > 0) html += `<span class="text-muted">+${restantes}</span>`;
 
             return html;
-          }
-          },
-          { data: "fecha_oficio" },
-          { data: "fecha_respuesta" },
-          {
-          data: "dias_transcurridos",
-          render: function (data, type) {
+            }
+            },
+            { data: "fecha_oficio" },
+            { data: "fecha_respuesta" },
+            {
+            data: "dias_transcurridos",
+            render: function (data, type) {
+            console.log("dias_transcurridos:", data, "type:", type);
             if (type !== 'display') return data;
             if (data === null || data === undefined || data === "") return "—";
             const clase = (data >= 3) ? "bg-success" : "bg-danger";
-            const dias = Math.abs(data); // Quitar el signo negativo
-            return data < 0 ? `<span class="badge ${clase}">${dias} días atrasados</span>` : `<span class="badge ${clase}">${dias} días</span>`;
-          }
-          },
-          {
-          data: null,
-          orderable: false,
-          searchable: false,
-          render: function (data, type, row) {
+            const dias = Math.abs(data);
+            return (data === 0) ? "<span class=\"badge bg-info\">Hoy</span>" : (data < 0 ? `<span class="badge ${clase}">${dias} días atrasados</span>` : `<span class="badge ${clase}">${dias} días</span>`);
+            }
+            },
+            {
+            data: null,
+            orderable: false,
+            searchable: false,
+            render: function (data, type, row) {
           if (type !== 'display') return null;
-          return `
-            <a href="/eliminar/${row.id}/" class="btn btn-rojo btn-tooltip" title="Eliminar" onclick="return confirm('¿Eliminar registro?')">❌</a>
+            let html = `
             <a href="/editar/${row.id}/" class="btn btn-naranja btn-tooltip" title="Editar">✏️</a>
             <a href="/reiterar_oficio/${row.id}/" class="btn btn-azul btn-tooltip" title="Reiterar">🕑</a>
             <a href="#" data-id="${row.id}" class="btn btn-verde btn-tooltip btn-respondido" title="Terminar">✔️</a>
             <a href="#" data-id="${row.id}" class="btn btn-gris btn-tooltip btn-detalle" title="Detalle">📋</a>
-          `;
+            `;
+            
+            // Solo mostrar botón eliminar si es admin
+            const perfil = String(window.perfil ?? window.userPerfil ?? "").trim().toLowerCase();
+            console.log("Perfil del usuario:", perfil);
+            if (perfil === "admin") {
+                html =
+                `<a href="/eliminar/${row.id}/" class="btn btn-rojo btn-tooltip" title="Eliminar" onclick="return confirm('¿Eliminar registro?')">❌</a>` +
+                `<a href="#" data-id="${row.id}" data-funcionario="${row.funcionario_asignado ? row.funcionario_asignado : ''}" class="btn btn-gris btn-tooltip btn-asignar" title="Asignar Trabajador">🪪</a>` +
+                html;
+            }
+            
+            return html;
         }
-      }
+      },
+      { data: "reiteraciones" },
     ],
     columnDefs: [{ orderable: false, targets: [6] }],
     initComplete: function () {
@@ -162,7 +175,8 @@ $(document).ready(function () {
             <a href="#" data-id="${row.id}" class="btn btn-gris btn-tooltip btn-detalle" title="Detalle">📋</a>
           `;
         }
-      }
+      },
+      { data: "reiteraciones" },
     ],
     initComplete: function () {
       setTimeout(function () {
