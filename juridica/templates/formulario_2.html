@@ -101,80 +101,63 @@
                     <input type="date" name="fecha_vista_fiscal" required>
                 </div>
                 <div class="attach-col">
-                <div class="file-attach" data-name="adjunto_fiscalia">
-                    <input class="file-attach__input" type="file" name="adjunto_fiscalia" hidden>
+                    <div class="file-attach" data-name="adjunto_fiscalia">
+                        <input class="file-attach__input" type="file" name="adjunto_fiscalia" hidden>
 
-                    <button type="button" class="file-attach__btn file-attach__btn--select">
-                    Adjuntar archivo
-                    </button>
+                        <button type="button" class="file-attach__btn file-attach__btn--select">
+                        Adjuntar archivo
+                        </button>
 
-                    <span class="file-attach__status" aria-live="polite">
-                    <span class="file-attach__check" aria-hidden="true">✓</span>
-                    <span class="file-attach__text">Archivo cargado</span>
-                    </span>
+                        <span class="file-attach__status" aria-live="polite">
+                        <span class="file-attach__check" aria-hidden="true">✓</span>
+                        <span class="file-attach__text">Archivo cargado</span>
+                        </span>
 
-                    <span class="file-attach__filename"></span>
+                        <span class="file-attach__filename"></span>
 
-                    <button type="button" class="file-attach__btn file-attach__btn--change">
-                    Cambiar
-                    </button>
+                        <button type="button" class="file-attach__btn file-attach__btn--change">
+                        Cambiar
+                        </button>
+                    </div>
                 </div>
-            </div>
             </div>
         </fieldset>
-
-        <!-- DIRECTOR JURÍDICO -->
-        <!-- <fieldset>
-            <legend>Informe de Legalidad de la Dirección Jurídica</legend>
-            <div class="row">
-                <div>
-                    <label>Oficio</label>
-                    <input type="text" name="oficio_juridico" required>
-                </div>
-                <div>
-                    <label>Fecha</label>
-                    <input type="date" name="fecha_juridico" required>
-                </div>
-                <div class="attach-col">
-                <div class="file-attach" data-name="adjunto_juridico">
-                    <input class="file-attach__input" type="file" name="adjunto_juridico" hidden>
-
-                    <button type="button" class="file-attach__btn file-attach__btn--select">
-                    Adjuntar archivo
-                    </button>
-
-                    <span class="file-attach__status" aria-live="polite">
-                    <span class="file-attach__check" aria-hidden="true">✓</span>
-                    <span class="file-attach__text">Archivo cargado</span>
-                    </span>
-
-                    <span class="file-attach__filename"></span>
-
-                    <button type="button" class="file-attach__btn file-attach__btn--change">
-                    Cambiar
-                    </button>
-                </div>
-            </div>
-            </div>
-        </fieldset>
-
-        <fieldset>
-            <legend>Contraloría Regional</legend>
-            <label>Fecha Registro</label>
-            <input type="date" name="fecha_contrata">
-        </fieldset> -->
 
         <fieldset>
             <legend>Etapa Actual</legend>
+                <div class="row"> 
                     <div>
                         <label>Etapa</label>
-                        <select name="etapa" required>
+                        <select name="sancion" required>
                             <option value="">-- Seleccionar etapa --</option>
-                            {% for etapa in ETAPAS %}
-                                <option value="{{ forloop.counter }}">{{ etapa }}</option>
+                            {% for sancion in SACCIONES %}
+                                <option value="{{ forloop.counter }}">{{ sancion }}</option>
                             {% endfor %}
                         </select>
                     </div>
+                
+                    <div class="attach-col">
+                        <div class="file-attach" data-name="adjunto_sancion">
+                            <input class="file-attach__input" type="file" name="adjunto_sancion" hidden>
+
+                            <button type="button" class="file-attach__btn file-attach__btn--select">
+                            Adjuntar archivo
+                            </button>
+
+                            <span class="file-attach__status" aria-live="polite">
+                            <span class="file-attach__check" aria-hidden="true">✓</span>
+                            <span class="file-attach__text">Archivo cargado</span>
+                            </span>
+
+                            <span class="file-attach__filename"></span>
+
+                            <button type="button" class="file-attach__btn file-attach__btn--change">
+                            Cambiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
         </fieldset>
 
         <div class="actions">

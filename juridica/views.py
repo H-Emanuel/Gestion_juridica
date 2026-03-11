@@ -292,13 +292,13 @@ def crear_registro_2(request):
     next_id = (RegistroSumario.objects.aggregate(m=Max("id"))["m"] or 0) + 1
 
     context = {
-        "ETAPAS": ETAPAS,
+        "SACCIONES": SACCIONES,
         "registro_id": next_id,
     }
     if request.method == "POST":
 
-        etapa_index = int(request.POST.getlist("etapa")[0]) - 1 if request.POST.getlist("etapa") else 0
-        etapa_value = ETAPAS[etapa_index] if 0 <= etapa_index < len(ETAPAS) else ""
+        etapa_index = int(request.POST.getlist("sancion")[0]) - 1 if request.POST.getlist("sancion") else 0
+        sancion = SACCIONES[etapa_index] if 0 <= etapa_index < len(SACCIONES) else ""
 
         registro = RegistroSumario.objects.create(
             Fecha_creacion=request.POST.get("fecha_creacion") or None,
@@ -313,7 +313,7 @@ def crear_registro_2(request):
             oficio_juridico=request.POST.get("oficio_juridico", "").strip(),
             fecha_juridico=request.POST.get("fecha_juridico") or None,
             adjunto_juridico=request.FILES.get("adjunto_juridico"),
-            etapa=etapa_value,
+            sancion=sancion,
             adjunto_sancion=request.FILES.get("adjunto_sancion"),
             fecha_contrata=request.POST.get("fecha_contrata") or None,
         )
@@ -338,6 +338,72 @@ def eliminar_sumario(request, id):
     registro = get_object_or_404(RegistroSumario, id=id)
     registro.delete()
     return redirect("lista_registros")
+
+
+def sumario_etapa(request, id):
+    registro = get_object_or_404(RegistroJuridico, id=id)
+
+    if request.method == "POST":
+        usuario = request.POST.get("usuario", "").strip()
+        contraseña = request.POST.get("contraseña", "").strip()
+        dirigido = request.POST.get("dirigido", "").strip()
+        copia = request.POST.get("copia", "").strip()
+        respuesta = request.POST.get("respuesta", "").strip()
+        archivos = request.FILES.getlist("archivos")
+
+        # Validaciones mínimas (evita intentar SMTP con vacío)
+        if not usuario or not contraseña:
+            messages.error(request, "Falta usuario o contraseña.")
+            return render(request, "reiterar.html", {"registro": registro})
+
+        if not dirigido:
+            messages.error(request, "Falta el/los destinatarios (Dirigido a).")
+            return render(request, "reiterar.html", {"registro": registro})
+
+        destinatarios = [e.strip() for e in dirigido.split(",") if e.strip()]
+        cc = [e.strip() for e in copia.split(",") if e.strip()] if copia else []
+
+        try:
+
+            # 2) Envía correo fuera de la transacción
+            print(f"[reiterar_oficio] Enviando correo. to={len(destinatarios)} cc={len(cc)} adj={len(archivos)} usuario={usuario!r}")
+            enviar_correo_smtp(
+                usuario=usuario,
+                contraseña=contraseña,
+                asunto="Respuesta a Oficio Jurídico",
+                cuerpo=respuesta,
+                destinatarios=destinatarios,
+                cc=cc,
+                archivos=archivos
+            )
+            print("[reiterar_oficio] Correo enviado OK")
+
+            # 3) Mensaje Guardar el registro
+
+            reitero = ReiterarJuridica.objects.create(
+                registro=registro,
+                respuesta=respuesta,
+                correos=dirigido,
+                copias_correos=copia
+            )
+            reitero.save()
+            Archivo_reitero_Adjunto.objects.bulk_create([
+                Archivo_reitero_Adjunto(reitero=reitero, archivo=f) for f in archivos
+            ])
+
+
+            messages.success(request, "Correo enviado correctamente.")
+            return redirect("lista_registros")
+
+        except Exception as e:
+            # No ocultar el error con redirect ciego
+            print(f"[reiterar_oficio] ERROR correo: {repr(e)}")
+            messages.error(request, f"Error al enviar correo: {e}")
+            return render(request, "reiterar.html", {"registro": registro})
+
+    return render(request, "reiterar.html", {"registro": registro})
+
+
 
 @csrf_exempt
 def asignar_usuario(request, id=None):

@@ -24,8 +24,9 @@ $(document).ready(function () {
           if (type !== 'display') return null;
           return `
             <a href="/eliminar_sumario/${row.id}/" class="btn btn-rojo btn-tooltip" title="Eliminar" onclick="return confirm('¿Eliminar registro?')">❌</a>
-            <a href="/reiterar_oficio/${row.id}/" class="btn btn-azul btn-tooltip" title="Reiterar">🕑</a>
-            <a href="#" data-id="${row.id}" class="btn btn-verde btn-tooltip btn-respondido" title="Terminar">✔️</a>
+            <a href="/reiterar_sumario/${row.id}/" class="btn btn-azul btn-tooltip" title="Reiterar">🕑</a>
+            <a href="#" data-id="${row.id}" class="btn btn-verde btn-tooltip btn-respondido-sumario" title="Terminar">✔️</a>
+            <a href="#" data-id="${row.id}" class="btn btn-verde btn-tooltip btn-etapas" title="Etapas">📃​</a>
             <a href="#" data-id="${row.id}" class="btn btn-gris btn-tooltip btn-detalle-sumario" title="Detalle">📋</a>
           `;
         }

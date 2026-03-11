@@ -23,6 +23,8 @@ urlpatterns = [
     path("api/sumario/", api.RegistroSumario_list, name="api_sumario"),
     path("api/sumario/<int:pk>/detalle/", api.sumario_detalle, name="sumario_detalle_api"),
     path("login/", views.login, name="login"),
+    path("reiterar_sumario/<int:id>/", views.reiterar_sumario, name="reiterar_sumario"),
+
 
 
     # ASIGNAR USUARIOS

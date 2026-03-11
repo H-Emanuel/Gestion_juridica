@@ -19,6 +19,9 @@ def _get_registro_from_instance(instance):
 
     if hasattr(instance, "reitero") and getattr(instance.reitero, "registro_id", None):
         return instance.reitero.registro
+    
+    if hasattr(instance, "sumario") and getattr(instance, "sumario_id", None):
+        return instance.sumario
 
     return None
 
@@ -225,6 +228,28 @@ class RegistroSumario(models.Model):
 
         return super().save(*args, **kwargs)
 
+class ReiterarSumario(models.Model):
+    sumario = models.ForeignKey(
+        RegistroSumario,
+        related_name="reiteraciones_sumario",
+        on_delete=models.CASCADE
+    )
+    respuesta = models.TextField()
+    correos = models.CharField(max_length=255, blank=True)
+    copias_correos = models.CharField(max_length=255, blank=True)
+    fecha_de_envio = models.DateField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Respuesta sumario - {self.sumario.id}"
+    
+class Archivo_reitero_sumario_Adjunto(models.Model):
+    sumario = models.ForeignKey(
+        ReiterarSumario,
+        related_name="documentos_sumario_reitero",
+        on_delete=models.CASCADE
+    )
+    archivo = models.FileField(upload_to=archivo_upload_to, null=True, blank=True)
+
 class DocumentoSumario(models.Model):
     sumario = models.ForeignKey(
         RegistroSumario,
@@ -243,7 +268,6 @@ class DocumentoSumario(models.Model):
         if not self.nombre and self.archivo and getattr(self.archivo, "file", None):
             self.nombre = os.path.basename(getattr(self.archivo.file, "name", self.archivo.name))
         super().save(*args, **kwargs)
-
 
 class Perfil(models.Model):
     PERFILES_PREDETERMINADOS = [
@@ -267,7 +291,6 @@ class Perfil(models.Model):
                 nombre=perfil_data['nombre'],
                 defaults={'permisos': perfil_data['permisos']}
             )
-
 
 class UsuarioPerfil(models.Model):
     usuario = models.OneToOneField(
