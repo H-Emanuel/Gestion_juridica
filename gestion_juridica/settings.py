@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-6wwo(oa^&82uhe6tq$8_vy449vx9pl$r9&@34ulbbz9@ze7-wg
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["23b708122f5a.ngrok-free.app","*"]
+ALLOWED_HOSTS = ["e435-200-50-126-98.ngrok-free.app","*"]
 
 
 # Application definition
@@ -76,38 +76,27 @@ WSGI_APPLICATION = 'gestion_juridica.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE':'django.db.backends.postgresql_psycopg2',
-#         'NAME':'departamento_sig_c',
-#         'USER':'departamento_sig_c',
-#         'PASSWORD':'Sigcontrol2023',
-#         'HOST':'localhost',
-#         'PORT':'5432',
-#     }
-# }
-
-# DATABASES = {
-#     'default': {
-#         'ENGINE':'django.db.backends.postgresql_psycopg2',
-#         'NAME':'gestion_j',
-#         'USER':'postgres',
-#         'PASSWORD':'1234',
-#         'HOST':'localhost',
-#         'PORT':'5432',
-#     }
-# }
-
 DATABASES = {
     'default': {
         'ENGINE':'django.db.backends.postgresql_psycopg2',
-        'NAME':'gestion_aj',
-        'USER':'gestion_aj',
-        'PASSWORD':'gestion_2025',
+        'NAME':'gestion_j',
+        'USER':'postgres',
+        'PASSWORD':'1234',
         'HOST':'localhost',
         'PORT':'5432',
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE':'django.db.backends.postgresql_psycopg2',
+#         'NAME':'gestion_aj',
+#         'USER':'gestion_aj',
+#         'PASSWORD':'gestion_2025',
+#         'HOST':'localhost',
+#         'PORT':'5432',
+#     }
+# }
 
 
 # Password validation
@@ -150,6 +139,7 @@ STATICFILES_DIRS = [      # Directorios adicionales de archivos estáticos (usua
     os.path.join(BASE_DIR, 'static'),
 ]
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')  # Donde se recopilarán los archivos en producción
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.ManifestStaticFilesStorage"
 
 # Media files (uploads)
 MEDIA_URL = '/media/'  # URL donde se servirán los archivos multimedia subidos

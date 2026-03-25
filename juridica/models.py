@@ -186,25 +186,39 @@ class RegistroSumario(models.Model):
     fecha_fiscalia = models.DateField(blank=True, null=True)
     adjunto_fiscalia = models.FileField(upload_to=archivo_upload_to_sumario, null=True, blank=True)
    
-    fecha_notificacion_fiscal = models.DateField(blank=True, null=True)
     
 
     oficio_juridico = models.CharField(max_length=100, blank=True, null=True)
-    fecha_juridico = models.DateField(blank=True, null=True)
-    adjunto_juridico = models.FileField(upload_to=archivo_upload_to_sumario, null=True, blank=True)
+
+    # Notificacion fiscal
+    fecha_notificacion_fiscal = models.DateField(blank=True, null=True)
+    adjunto_not_fiscalia = models.FileField(upload_to=archivo_upload_to_sumario, null=True, blank=True)
+
+    # Informe DAJ
+    fecha_daj = models.DateField(blank=True, null=True)
+    adjunto_daj = models.FileField(upload_to=archivo_upload_to_sumario, null=True, blank=True)
+
 
     sancion = models.CharField(max_length=100, blank=True, null=True)
     adjunto_sancion = models.FileField(upload_to=archivo_upload_to_sumario, null=True, blank=True)
 
-    etapa = models.CharField(max_length=100, blank=True, null=True)
-    
     fecha_contrata = models.DateField(null=True, blank=True)
 
     oficio_adjunto = models.FileField(upload_to=archivo_upload_to_sumario, blank=True, null=True)
     oficio_fecha = models.DateField(blank=True, null=True)
 
+    etapa = models.CharField(max_length=100, blank=True, null=True)
+
+    archivo_e_1 = models.FileField(upload_to=archivo_upload_to_sumario, blank=True, null=True)
+    archivo_e_2 = models.BooleanField(default=False)
+    archivo_e_3 = models.BooleanField(default=False)
+    archivo_e_4 = models.FileField(upload_to=archivo_upload_to_sumario, blank=True, null=True)
+
 
     finalizado = models.BooleanField(default=False)
+    respuesta = models.TextField(blank=True)
+    archivo_final = models.FileField(upload_to=archivo_upload_to_sumario, blank=True, null=True)
+
 
     def save(self, *args, **kwargs):
         """
@@ -212,19 +226,16 @@ class RegistroSumario(models.Model):
         1) Guardamos sin archivos para obtener PK
         2) Reasignamos archivos y guardamos de nuevo
         """
-        if self.pk is None and (self.adjunto_fiscalia or self.adjunto_juridico or self.oficio_adjunto):
+        if self.pk is None and (self.adjunto_fiscalia  or self.oficio_adjunto):
             af = self.adjunto_fiscalia
-            aj = self.adjunto_juridico
             oa = self.oficio_adjunto
 
             self.adjunto_fiscalia = None
-            self.adjunto_juridico = None
             self.oficio_adjunto = None
             super().save(*args, **kwargs)  # crea PK
 
             self.adjunto_fiscalia = af
-            self.adjunto_juridico = aj
-            return super().save(update_fields=["adjunto_fiscalia", "adjunto_juridico"])
+            return super().save(update_fields=["adjunto_fiscalia"])
 
         return super().save(*args, **kwargs)
 
@@ -234,6 +245,7 @@ class ReiterarSumario(models.Model):
         related_name="reiteraciones_sumario",
         on_delete=models.CASCADE
     )
+    etapa = models.CharField(max_length=100, blank=True, null=True)
     respuesta = models.TextField()
     correos = models.CharField(max_length=255, blank=True)
     copias_correos = models.CharField(max_length=255, blank=True)

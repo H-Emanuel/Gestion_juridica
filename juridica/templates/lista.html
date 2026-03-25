@@ -54,63 +54,63 @@
   </div>
 
   <!-- Pendientes -->
-  <div id="wrapPendientes">
-    <table id="registrosTable" class="table table-hover table-bordered align-middle w-100">
-      <thead>
-        <tr>
-          <th>Folio</th>
-          <th>Oficio o Derivacion</th>
-          <th>Departamento/s</th>
-          <th>Fecha Oficio</th>
-          <th>Fecha Respuesta Prevista</th>
-          <th>Días transcurridos</th>
-          <th>Acciones</th>
-          <th>N° de reiteraciones</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-
-  <!-- Histórico -->
-    <div id="wrapHistorico" class="d-none">
-      <table id="historicoTable" class="table table-hover table-bordered align-middle w-100">
+    <div id="wrapPendientes">
+      <table id="registrosTable" class="table table-hover table-bordered align-middle w-100">
         <thead>
           <tr>
             <th>Folio</th>
             <th>Oficio o Derivacion</th>
             <th>Departamento/s</th>
             <th>Fecha Oficio</th>
-            <th>Fecha Respuesta</th>
+            <th>Fecha Respuesta Prevista</th>
+            <th>Días transcurridos</th>
             <th>Acciones</th>
             <th>N° de reiteraciones</th>
-
           </tr>
         </thead>
         <tbody></tbody>
       </table>
+    </div>
 
-      
-    </div>
+  <!-- Histórico -->
+      <div id="wrapHistorico" class="d-none">
+        <table id="historicoTable" class="table table-hover table-bordered align-middle w-100">
+          <thead>
+            <tr>
+              <th>Folio</th>
+              <th>Oficio o Derivacion</th>
+              <th>Departamento/s</th>
+              <th>Fecha Oficio</th>
+              <th>Fecha Respuesta</th>
+              <th>Acciones</th>
+              <th>N° de reiteraciones</th>
+
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+
+        
+      </div>
     <br>
-    </div>
+  </div>
  
 
-  <div id="sumarioCard" class="card p-4 view-panel is-hidden">
+<div id="sumarioCard" class="card p-4 view-panel is-hidden">
     <div class="d-flex justify-content-between align-items-center mb-3">
       <h3 class="mb-0">👤 Sumarios</h3>
 
-          <div class="d-flex gap-2 align-items-center">
-      <select id="tablaSelector" class="form-select form-select-sm" style="width:auto;">
-        <option value="pendientes" selected>En Curso</option>
-        <option value="historico">Histórico (Terminados)</option>
-      </select>
+      <div class="d-flex gap-2 align-items-center">
+        <select id="tablaSumarioSelector" class="form-select form-select-sm" style="width:auto;">
+          <option value="proceso" selected>En Proceso</option>
+          <option value="terminado">Terminados</option>
+        </select>
 
-      <a href="/crear_2/" class="btn btn-primary btn-sm">+ Nuevo Registro sumario</a>
+        <a href="/crear_2/" class="btn btn-primary btn-sm">+ Nuevo Registro sumario</a>
+      </div>
     </div>
-  </div>
 
-  <div id="wrapPendientes">
+  <div id="wrapProceso">
     <table id="SumarioTable" class="table table-hover table-bordered align-middle w-100">
       <thead>
         <tr>
@@ -125,6 +125,19 @@
     </table>
   </div>
 
+  <div id="wrapTerminado" class="d-none">
+    <table id="SumarioHistoricoTable" class="table table-hover table-bordered align-middle w-100">
+      <thead>
+        <tr>
+          <th>N°</th>
+          <th>Fecha de Registro</th>
+          <th>N° D.A Instrucción Sumario</th>
+          <th>Fiscal</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
   </div>
 </div>
 
@@ -165,9 +178,35 @@
   sumarioRadio.addEventListener('change', () => show('sumario'));
 </script>
 
-{% block content %}
-        {% include 'modal/modal.html' %}
-{% endblock %}
+<script>
+  const tablaSelector = document.getElementById('tablaSumarioSelector');
+  const wrapPendientes = document.getElementById('wrapPendientes');
+  const wrapHistorico = document.getElementById('wrapHistorico');
+
+  tablaSelector.addEventListener('change', () => {
+    if (tablaSelector.value === 'pendientes') {
+      wrapPendientes.classList.remove('d-none');
+      wrapHistorico.classList.add('d-none');
+    } else {
+      wrapPendientes.classList.add('d-none');
+      wrapHistorico.classList.remove('d-none');
+    }
+  });
+
+  const tablaSumarioSelector = document.getElementById('tablaSumarioSelector');
+  const wrapProceso = document.getElementById('wrapProceso');
+  const wrapTerminado = document.getElementById('wrapTerminado');
+
+  tablaSumarioSelector.addEventListener('change', () => {
+    if (tablaSumarioSelector.value === 'proceso') {
+      wrapProceso.classList.remove('d-none');
+      wrapTerminado.classList.add('d-none');
+    } else {
+      wrapProceso.classList.add('d-none');
+      wrapTerminado.classList.remove('d-none');
+    }
+  });
+</script>
 
 
 
@@ -177,7 +216,13 @@
 <script src="{% static 'js/detalle_v2.js' %}"></script>
 <script src="{% static 'js/detalle_sumario.js' %}"></script>
 
-
 <script src="{% static 'js/asignar_usuario.js' %}"></script>
+<script src="{% static 'js/etapa_sumario.js' %}"></script>
+<script src="{% static 'js/final_sumario.js' %}"></script>
+
+
+{% block content %}
+        {% include 'modal/modal.html' %}
+{% endblock %}
 
 {% endblock %}

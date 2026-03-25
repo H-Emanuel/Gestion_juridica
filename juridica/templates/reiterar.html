@@ -88,7 +88,7 @@
 
     <div class="wrap">
         <div class="card" role="region" aria-label="Formulario de reiteración">
-            <h1>Reiterar Oficio</h1>
+            <h1>{% if sumario %}Registro de avance de etapas{% else %}Reiterar Oficio{% endif %}</h1>
             <form enctype="multipart/form-data" method="post">
                 {% csrf_token %}
                 <div class="row">
@@ -101,6 +101,13 @@
                         <input id="contraseña" name="contraseña" type="password" placeholder="Contraseña" required>
                     </div>
                 </div>
+
+                {% if sumario %}
+                <div>
+                    <label for="etapa">Etapa</label>
+                    <input id="etapa" name="etapa" type="text" value="{% if sumario %}{{ sumario.etapa }}{% endif %}" disabled>
+                </div>
+                {% endif %}
 
                 <div>
                     <label for="dirigido">Dirigido a</label>

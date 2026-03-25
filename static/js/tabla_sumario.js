@@ -23,8 +23,9 @@ $(document).ready(function () {
         render: function (data, type, row) {
           if (type !== 'display') return null;
           return `
+            <a href="/editar_sumario/${row.id}/" class="btn btn-naranja btn-tooltip" title="Editar sumario">✏️</a>
             <a href="/eliminar_sumario/${row.id}/" class="btn btn-rojo btn-tooltip" title="Eliminar" onclick="return confirm('¿Eliminar registro?')">❌</a>
-            <a href="/reiterar_sumario/${row.id}/" class="btn btn-azul btn-tooltip" title="Reiterar">🕑</a>
+            <a href="/reiterar_sumario/${row.id}/" class="btn btn-azul btn-tooltip" title="Registro de avance de sumario">🕑</a>
             <a href="#" data-id="${row.id}" class="btn btn-verde btn-tooltip btn-respondido-sumario" title="Terminar">✔️</a>
             <a href="#" data-id="${row.id}" class="btn btn-verde btn-tooltip btn-etapas" title="Etapas">📃​</a>
             <a href="#" data-id="${row.id}" class="btn btn-gris btn-tooltip btn-detalle-sumario" title="Detalle">📋</a>
@@ -39,6 +40,44 @@ $(document).ready(function () {
       }, 50);
     }
   });
+
+
+// =========================
+  // Histórico (terminados)
+  // =========================
+const tableHistorico = $('#SumarioHistoricoTable').DataTable({
+    dom: 'frtip',
+    language: { url: "/static/js/es-MX.json" },
+    processing: true,
+    serverSide: true,
+    ajax: { url: "/api/historico_sumario/", type: "GET" },
+    pageLength: 4,
+    order: [[0, "desc"]],
+    columns: [
+      { data: "id" },
+      { data: "Fecha_creacion" },
+      { data: "n_da" },
+      { data: "fiscal_acargo" },
+      {
+        data: null,
+        orderable: false,
+        searchable: false,
+        render: function (data, type, row) {
+          if (type !== 'display') return null;
+          return `
+            <a href="#" data-id="${row.id}" class="btn btn-gris btn-tooltip btn-detalle-sumario" title="Detalle">📋</a>
+          `;
+        }
+      }
+    ],
+    columnDefs: [{ orderable: false, targets: [0] }],
+    initComplete: function () {
+      setTimeout(function () {
+        $('#SumarioHistoricoTable_filter input').attr('placeholder', 'N° de DA, Fiscal a cargo').css('width', '250px');
+      }, 50);
+    }
+  });
+
 
 
 
@@ -114,19 +153,19 @@ $(document).ready(function () {
   }
   const csrftoken = getCookie('csrftoken');
 
-  $('#registrosTable').on('click', '.btn-respondido', function (e) {
+  $('#SumarioTable').on('click', '.btn-respondido-sumario', function (e) {
     e.preventDefault();
 
     const $btn = $(this);
     const id = $btn.data('id');
 
-    // Abre el modal (cambia #miModalResponder por tu ID real)
-    $('#miModalResponder').modal('show');
+    // Abre el modal
+    
+
+    $('#ModalFinal_sumario').modal('show');
     
     // Guarda el ID en el modal para usarlo después
-    $('#miModalResponder').data('registro-id', id);
-
-    
+    $('#ModalFinal_sumario').data('registro-id', id);
   });
 
   // =========================

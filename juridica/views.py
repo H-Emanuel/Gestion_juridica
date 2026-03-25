@@ -59,19 +59,6 @@ ASIGNACIONES = [
     "Otro",
 ]
 
-ETAPAS = [
-    "1.- indagatoria o investigativa.",
-    "2.- formulación de encargos o etapa acusatoria",
-    "3.- periodo de descargos y/o periodo de prueba",
-    "4.- informe del fiscal",
-]
-
-SACCIONES = [
-    "1.- Censura",
-    "2.- Multa",
-    "3.- Suspensión del empleo desde treinta Dias a tres meses",
-    "4.- Destitución",
-]
 
 @login_required(login_url='login')
 def crear_registro(request):
@@ -201,7 +188,6 @@ def registro_editar(request, id):
         "documentos": registro.documentos.all().order_by("-fecha_subida"),
     })
 
-
 @login_required(login_url='login')
 def documento_eliminar(request, doc_id):
     doc = get_object_or_404(Documento, pk=doc_id)
@@ -287,6 +273,22 @@ def eliminar_registro(request, id):
     return redirect("lista_registros")
 
 # SUMARIOS
+ETAPAS = [
+    "1.- indagatoria o investigativo.",
+    "2.- formulación de encargos o etapa acusatoria",
+    "3.- periodo de descargos y/o periodo de prueba",
+    "4.- informe del fiscal",
+    "5.- termino",
+]
+
+SACCIONES = [
+    "1.- Censura",
+    "2.- Multa",
+    "3.- Suspensión del empleo desde treinta Dias a tres meses",
+    "4.- Destitución",
+    "5.- Sobre Seguimiento"
+]
+
 @login_required(login_url='login')
 def crear_registro_2(request):
     next_id = (RegistroSumario.objects.aggregate(m=Max("id"))["m"] or 0) + 1
@@ -306,16 +308,34 @@ def crear_registro_2(request):
             fecha_da=request.POST.get("fecha_da") or None,
             fiscal_acargo=request.POST.get("fiscal", "").strip(),
             grado_fiscal=request.POST.get("grado_fiscal", "").strip(),
+
             materia=request.POST.get("materia", "").strip(),
+
+
+
+            #vistal_fical
             oficio_fiscalia=request.POST.get("oficio_vista_fiscal", "").strip(),
             fecha_fiscalia=request.POST.get("fecha_vista_fiscal") or None,
             adjunto_fiscalia=request.FILES.get("adjunto_fiscalia"),
-            oficio_juridico=request.POST.get("oficio_juridico", "").strip(),
-            fecha_juridico=request.POST.get("fecha_juridico") or None,
-            adjunto_juridico=request.FILES.get("adjunto_juridico"),
+
+
+            #Notificacion fical
+
+            fecha_notificacion_fiscal=request.POST.get("fecha_notificacion_fiscal") or None,
+            adjunto_not_fiscalia=request.FILES.get("adjunto_not_fiscalia"),
+
+            #Informe DAJ
+
+            fecha_daj=request.POST.get("fecha_daj") or None,
+            adjunto_daj=request.FILES.get("adjunto_daj"),
+            
+            # ------------------------------------
+
             sancion=sancion,
             adjunto_sancion=request.FILES.get("adjunto_sancion"),
             fecha_contrata=request.POST.get("fecha_contrata") or None,
+            
+            etapa = ETAPAS[0]
         )
 
         nombres = request.POST.getlist("nombre[]")
@@ -334,11 +354,67 @@ def crear_registro_2(request):
 
 
 @login_required(login_url='login')
+@csrf_exempt
+def editar_sumario(request, id):
+    sumario = get_object_or_404(RegistroSumario, id=id)
+
+    if request.method == "POST":
+        etapa_index = int(request.POST.getlist("sancion")[0]) - 1 if request.POST.getlist("sancion") else -1
+        sancion = SACCIONES[etapa_index] if 0 <= etapa_index < len(SACCIONES) else sumario.sancion
+
+        sumario.Fecha_creacion = request.POST.get("fecha_creacion") or None
+        sumario.n_da = request.POST.get("n_da", "").strip()
+        sumario.fecha_da = request.POST.get("fecha_da") or None
+        sumario.fiscal_acargo = request.POST.get("fiscal", "").strip()
+        sumario.grado_fiscal = request.POST.get("grado_fiscal", "").strip()
+        sumario.materia = request.POST.get("materia", "").strip()
+        sumario.oficio_fiscalia = request.POST.get("oficio_vista_fiscal", "").strip()
+        sumario.fecha_fiscalia = request.POST.get("fecha_vista_fiscal") or None
+        sumario.fecha_notificacion_fiscal = request.POST.get("fecha_notificacion_fiscal") or None
+        sumario.fecha_daj = request.POST.get("fecha_daj") or None
+        sumario.sancion = sancion
+
+        if request.FILES.get("adjunto_fiscalia"):
+            sumario.adjunto_fiscalia = request.FILES.get("adjunto_fiscalia")
+        if request.FILES.get("adjunto_not_fiscalia"):
+            sumario.adjunto_not_fiscalia = request.FILES.get("adjunto_not_fiscalia")
+        if request.FILES.get("adjunto_daj"):
+            sumario.adjunto_daj = request.FILES.get("adjunto_daj")
+        if request.FILES.get("adjunto_sancion"):
+            sumario.adjunto_sancion = request.FILES.get("adjunto_sancion")
+
+        nombres = request.POST.getlist("nombre[]")
+        grados = request.POST.getlist("grado[]")
+        sumario.nombre_apellido_grado_imputado = [
+            {"nombre": n, "grado": g} for n, g in zip(nombres, grados)
+        ]
+
+        sumario.save()
+        messages.success(request, "Sumario actualizado.")
+        return redirect("editar_sumario", id=sumario.id)
+
+    # GET: determine sancion index for pre-selection (1-based)
+    sancion_index = None
+    if sumario.sancion:
+        try:
+            sancion_index = SACCIONES.index(sumario.sancion) + 1
+        except ValueError:
+            sancion_index = None
+
+    return render(request, "formulario_2.html", {
+        "instance": sumario,
+        "SACCIONES": SACCIONES,
+        "sancion_index": sancion_index,
+        "registro_id": sumario.id,
+        "inculpados_json": json.dumps(sumario.nombre_apellido_grado_imputado or []),
+    })
+
+
+@login_required(login_url='login')
 def eliminar_sumario(request, id):
     registro = get_object_or_404(RegistroSumario, id=id)
     registro.delete()
     return redirect("lista_registros")
-
 
 def sumario_etapa(request, id):
     registro = get_object_or_404(RegistroJuridico, id=id)
@@ -403,8 +479,6 @@ def sumario_etapa(request, id):
 
     return render(request, "reiterar.html", {"registro": registro})
 
-
-
 @csrf_exempt
 def asignar_usuario(request, id=None):
     if request.method != "POST":
@@ -436,10 +510,71 @@ def asignar_usuario(request, id=None):
         {"ok": True, "message": f"Usuario {usuario.username} asignado.", "registro_id": registro.id}
     )
 
+def reiterar_sumario(request, id):
+    sumario = get_object_or_404(RegistroSumario, id=id)
+
+    if request.method == "POST":
+        usuario = request.POST.get("usuario", "").strip()
+        contraseña = request.POST.get("contraseña", "").strip()
+        dirigido = request.POST.get("dirigido", "").strip()
+        copia = request.POST.get("copia", "").strip()
+        respuesta = request.POST.get("respuesta", "").strip()
+        archivos = request.FILES.getlist("archivos")
+
+        # Validaciones mínimas (evita intentar SMTP con vacío)
+        if not usuario or not contraseña:
+            messages.error(request, "Falta usuario o contraseña.")
+            return render(request, "reiterar.html", {"sumario": sumario})
+
+        if not dirigido:
+            messages.error(request, "Falta el/los destinatarios (Dirigido a).")
+            return render(request, "reiterar.html", {"sumario": sumario})
+
+        destinatarios = [e.strip() for e in dirigido.split(",") if e.strip()]
+        cc = [e.strip() for e in copia.split(",") if e.strip()] if copia else []
+
+        try:
+
+            # 2) Envía correo fuera de la transacción
+            print(f"[reiterar_oficio] Enviando correo. to={len(destinatarios)} cc={len(cc)} adj={len(archivos)} usuario={usuario!r}")
+            enviar_correo_smtp(
+                usuario=usuario,
+                contraseña=contraseña,
+                asunto="Estado de Sumario Administrativo",
+                cuerpo=respuesta,
+                destinatarios=destinatarios,
+                cc=cc,
+                archivos=archivos
+                
+            )
+            print("[reiterar_oficio] Correo enviado OK")
+
+            # 3) Mensaje Guardar el registro
+
+            reitero = ReiterarSumario.objects.create(
+                sumario=sumario,
+                respuesta=respuesta,
+                correos=dirigido,
+                copias_correos=copia,
+                etapa = sumario.etapa
+            )
+            reitero.save()
+            Archivo_reitero_sumario_Adjunto.objects.bulk_create([
+                Archivo_reitero_sumario_Adjunto(reitero=reitero, archivo=f) for f in archivos
+            ])
 
 
+            messages.success(request, "Correo enviado correctamente.")
+            return redirect("lista_registros")
 
-# Login simple (sin auth ni nada, solo para demo)
+        except Exception as e:
+            # No ocultar el error con redirect ciego
+            print(f"[reiterar_oficio] ERROR correo: {repr(e)}")
+            messages.error(request, f"Error al enviar correo: {e}")
+            return render(request, "reiterar.html", {"sumario": sumario})
+
+    return render(request, "reiterar.html", {"sumario": sumario})
+
 @csrf_exempt
 def login(request):
     if request.method == "POST":

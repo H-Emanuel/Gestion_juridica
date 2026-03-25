@@ -19,18 +19,22 @@ urlpatterns = [
 
     # SUMARIO
 
+    path("editar_sumario/<int:id>/", views.editar_sumario, name="editar_sumario"),
     path("eliminar_sumario/<int:id>/", views.eliminar_sumario, name="eliminar_sumario"),
     path("api/sumario/", api.RegistroSumario_list, name="api_sumario"),
+    path("api/historico_sumario/", api.RegistroSumario_terminado_list, name="api_historico_sumario"),
     path("api/sumario/<int:pk>/detalle/", api.sumario_detalle, name="sumario_detalle_api"),
-    path("login/", views.login, name="login"),
+    path("api/sumario/<int:pk>/etapas/", api.sumario_etapa, name="sumario_etapas_api"),
     path("reiterar_sumario/<int:id>/", views.reiterar_sumario, name="reiterar_sumario"),
-
-
+    path("api/sumario/<int:pk>/etapas/guardar/", api.guardarEtapas, name="guardar_etapas_api"),
+    path("api/sumario/<int:id>/finalizar/", api.terminonio_sumario, name="finalizar_sumario_api"),
 
     # ASIGNAR USUARIOS
     path("api/usuarios/", api.Usuario_list, name="api_usuarios"),
     path("api/asignar/", views.asignar_usuario, name="api_asignar_usuario"),
 
     # LOGOUT
+    path("login/", views.login, name="login"),
+
     path("logout/", views.logout_view, name="logout"),
 ]
