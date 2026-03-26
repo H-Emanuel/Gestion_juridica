@@ -34,7 +34,7 @@
     function renderEtapasModal(data) {
         const etapas = [
             { id: 1, nombre: 'Indagatoria o investigación', tipo: 'archivo' },
-            { id: 2, nombre: 'Formulación de encargos o etapa acusatoria', tipo: 'boolean' },
+            { id: 2, nombre: 'Formulación de cargos o etapa acusatoria', tipo: 'boolean' },
             { id: 3, nombre: 'Periodo de descargos y/o periodo de prueba', tipo: 'boolean' },
             { id: 4, nombre: 'Informe del fiscal', tipo: 'archivo' }
         ];

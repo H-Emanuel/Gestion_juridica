@@ -82,6 +82,40 @@
             </button>
         </fieldset>
 
+
+
+        <fieldset>
+            <legend>Notificacion al Fiscal</legend>
+            <div class="row">
+                <div>
+                    <label>Fecha</label>
+                    <input type="date" name="fecha_notificacion_fiscal"
+                        value="{% if instance %}{{ instance.fecha_notificacion_fiscal|date:'Y-m-d' }}{% endif %}">
+                </div>
+                <div class="attach-col">
+                    {% if instance and instance.adjunto_not_fiscalia %}
+                        <div style="margin-bottom:6px;">
+                            <small>Actual: <a href="{{ instance.adjunto_not_fiscalia.url }}" target="_blank">📎 Ver archivo</a></small>
+                        </div>
+                    {% endif %}
+                    <div class="file-attach" data-name="adjunto_not_fiscalia">
+                        <input class="file-attach__input" type="file" name="adjunto_not_fiscalia" hidden>
+                        <button type="button" class="file-attach__btn file-attach__btn--select">
+                        {% if instance and instance.adjunto_not_fiscalia %}Reemplazar archivo{% else %}Adjuntar archivo{% endif %}
+                        </button>
+                        <span class="file-attach__status" aria-live="polite">
+                        <span class="file-attach__check" aria-hidden="true">✓</span>
+                        <span class="file-attach__text">Archivo cargado</span>
+                        </span>
+                        <span class="file-attach__filename"></span>
+                        <button type="button" class="file-attach__btn file-attach__btn--change">
+                        Cambiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
         <fieldset>
             <legend>Vista Fiscal</legend>
             <div class="row">
@@ -119,40 +153,10 @@
             </div>
         </fieldset>
 
-        <fieldset>
-            <legend>Notificaciones Fiscal</legend>
-            <div class="row">
-                <div>
-                    <label>Fecha</label>
-                    <input type="date" name="fecha_notificacion_fiscal"
-                        value="{% if instance %}{{ instance.fecha_notificacion_fiscal|date:'Y-m-d' }}{% endif %}">
-                </div>
-                <div class="attach-col">
-                    {% if instance and instance.adjunto_not_fiscalia %}
-                        <div style="margin-bottom:6px;">
-                            <small>Actual: <a href="{{ instance.adjunto_not_fiscalia.url }}" target="_blank">📎 Ver archivo</a></small>
-                        </div>
-                    {% endif %}
-                    <div class="file-attach" data-name="adjunto_not_fiscalia">
-                        <input class="file-attach__input" type="file" name="adjunto_not_fiscalia" hidden>
-                        <button type="button" class="file-attach__btn file-attach__btn--select">
-                        {% if instance and instance.adjunto_not_fiscalia %}Reemplazar archivo{% else %}Adjuntar archivo{% endif %}
-                        </button>
-                        <span class="file-attach__status" aria-live="polite">
-                        <span class="file-attach__check" aria-hidden="true">✓</span>
-                        <span class="file-attach__text">Archivo cargado</span>
-                        </span>
-                        <span class="file-attach__filename"></span>
-                        <button type="button" class="file-attach__btn file-attach__btn--change">
-                        Cambiar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </fieldset>
+        
 
         <fieldset>
-            <legend>Informe Baj</legend>
+            <legend>Informe DAJ</legend>
             <div class="row">
                 <div>
                     <label>Fecha</label>

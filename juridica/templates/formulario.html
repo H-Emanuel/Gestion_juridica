@@ -39,6 +39,15 @@
     <form method="POST" id="form-oficio" enctype="multipart/form-data">
         {% csrf_token %}
 
+
+        {% if error %}
+            <div class="row" style="margin-bottom: 20px;">
+                <div class="col" style="width: 100%; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 6px; padding: 12px; color: #721c24;">
+                    <strong>⚠️ {{ error }}</strong>
+                </div>
+            </div>
+        {% endif %}
+
         <!-- FILA 1: Folio y N° Oficio -->
         <div class="row">
             <div class="col">

@@ -107,7 +107,7 @@ function renderDetalle(d) {
 
     <hr>
 
-    <p><strong>Nombre y apellido del imputado:</strong></p>
+    <p><strong>Nombre y apellido del inculpado:</strong></p>
     <div>
       <table class="table">
         <thead>

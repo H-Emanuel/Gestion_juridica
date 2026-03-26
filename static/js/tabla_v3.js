@@ -89,7 +89,7 @@ $(document).ready(function () {
             if (perfil === "admin") {
                 html =
                 `<a href="/eliminar/${row.id}/" class="btn btn-rojo btn-tooltip" title="Eliminar" onclick="return confirm('¿Eliminar registro?')">❌</a>` +
-                `<a href="#" data-id="${row.id}" data-funcionario="${row.funcionario_asignado ? row.funcionario_asignado : ''}" class="btn btn-gris btn-tooltip btn-asignar" title="Asignar Trabajador">🪪</a>` +
+                `<a href="#" data-id="${row.id}" data-funcionario="${row.funcionario_asignado ? row.funcionario_asignado : ''}" class="btn btn-gris btn-tooltip btn-asignar" title="Asignar Funcionario">🪪</a>` +
                 html;
             }
             

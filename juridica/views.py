@@ -70,8 +70,28 @@ def crear_registro(request):
                 # 1) Crear el registro jurídico
                 # Determinar el valor de asignacion
                 
+                # Validar que el folio no exista (ignorando formato)
+                folio_input = request.POST.get("folio", "").strip()
+                
+                # Extraer solo la primera parte del folio (antes del guión o espacio)
+                if folio_input:
+                    # Tomar solo los números/caracteres antes del primer guión o espacio
+                    folio_principal = folio_input.split('-')[0].split()[0].strip()
+                    folio_normalizado = ''.join(c for c in folio_principal if c.isalnum()).lower()
+
+                    print(f"Validando folio: input={folio_input!r} principal={folio_principal!r} normalizado={folio_normalizado!r}")
+                    
+                    folio_existente = RegistroJuridico.objects.filter(folio__isnull=False)
+                    for reg in folio_existente:
+                        # Extraer la parte principal del folio en BD también
+                        folio_db_principal = reg.folio.split('-')[0].split()[0].strip()
+                        folio_db_normalizado = ''.join(c for c in folio_db_principal if c.isalnum()).lower()
+                        if folio_normalizado == folio_db_normalizado:
+                            messages.error(request, f"El folio {folio_principal} ya existe en el sistema.")
+                            return render(request, "formulario.html", {"asignaciones": ASIGNACIONES, "error": f"El folio {folio_principal} ya existe en el sistema."})
+                
                 registro = RegistroJuridico.objects.create(
-                    folio=request.POST.get("folio", "").strip(),
+                    folio=folio_input,
                     oficio=request.POST.get("oficio", "").strip(),
                     materia=request.POST.get("materia", "").strip(),
                     fecha_oficio=request.POST.get("fecha_oficio"),
@@ -275,10 +295,10 @@ def eliminar_registro(request, id):
 # SUMARIOS
 ETAPAS = [
     "1.- indagatoria o investigativo.",
-    "2.- formulación de encargos o etapa acusatoria",
+    "2.- formulación de cargos o etapa acusatoria",
     "3.- periodo de descargos y/o periodo de prueba",
     "4.- informe del fiscal",
-    "5.- termino",
+    "5.- Terminado",
 ]
 
 SACCIONES = [
