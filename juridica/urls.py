@@ -14,8 +14,9 @@ urlpatterns = [
     # FOLIOS
     path("api/registros/", api.RegistroJuridico_list, name="api_registros"),
     path("api/historico/", api.RegistroJuridico_terminado_list, name="api_historico"),
-    path("api/respondido/<int:id>/", api.oficio_respodido, name="oficio_respodido"),
     path("api/registro/<int:pk>/detalle/", api.registro_detalle_api, name="registro_detalle_api"),
+    path("api/registro/<int:pk>/respondido/", api.respondido, name="respondido_api"),
+    path("api/registro/<int:pk>/rechazado/", api.rechazado, name="rechazado_api"),
 
     # SUMARIO
 

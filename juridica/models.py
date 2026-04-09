@@ -53,6 +53,7 @@ class RegistroJuridico(models.Model):
     fecha_respuesta = models.DateField(null=True, blank=True)
     asignaciones = models.JSONField(default=list, blank=True)
     terminado = models.BooleanField(default=False)
+    terminado_funcinario = models.BooleanField(default=False)
     dirigido_a = models.CharField(max_length=100, blank=True)
     cc = models.CharField(max_length=255, blank=True)
     respuesta = models.TextField(blank=True)
@@ -206,6 +207,13 @@ class RegistroSumario(models.Model):
 
     oficio_adjunto = models.FileField(upload_to=archivo_upload_to_sumario, blank=True, null=True)
     oficio_fecha = models.DateField(blank=True, null=True)
+
+
+    expediente = models.FileField(upload_to=archivo_upload_to_sumario, blank=True, null=True)
+    fecha_expediente = models.DateField(blank=True, null=True)
+    
+    decreto_alcadicio = models.FileField(upload_to=archivo_upload_to_sumario, blank=True, null=True)
+    fecha_dec_alcadicio = models.DateField(blank=True, null=True)
 
     etapa = models.CharField(max_length=100, blank=True, null=True)
 

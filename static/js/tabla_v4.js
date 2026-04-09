@@ -14,11 +14,9 @@ $(document).ready(function () {
     columns: [
       { data: "folio" },
       { data: "oficio" },
-      {
-        data: "asignaciones",
+      { data: "asignaciones",
         render: function (data, type, row) {
           if (type !== "display") {
-            // Para orden/búsqueda devolvemos texto plano
             if (Array.isArray(data)) return data.join(", ");
             return data || "";
           }
@@ -26,7 +24,7 @@ $(document).ready(function () {
           const asignaciones = Array.isArray(data) ? data : [];
           if (!asignaciones.length) return `<span class="text-muted">Sin asignación</span>`;
 
-          const max = 3; // cuántas muestras antes de resumir
+          const max = 3;
           const visibles = asignaciones.slice(0, max);
           const restantes = asignaciones.length - visibles.length;
 
@@ -79,13 +77,25 @@ $(document).ready(function () {
             let html = `
             <a href="/editar/${row.id}/" class="btn btn-naranja btn-tooltip" title="Editar">✏️</a>
             <a href="/reiterar_oficio/${row.id}/" class="btn btn-azul btn-tooltip" title="Reiterar">🕑</a>
-            <a href="#" data-id="${row.id}" class="btn btn-verde btn-tooltip btn-respondido" title="Terminar">✔️</a>
-            <a href="#" data-id="${row.id}" class="btn btn-gris btn-tooltip btn-detalle" title="Detalle">📋</a>
             `;
             
-            // Solo mostrar botón eliminar si es admin
             const perfil = String(window.perfil ?? window.userPerfil ?? "").trim().toLowerCase();
-            console.log("Perfil del usuario:", perfil);
+            const revision = row.revision || false;
+
+
+            if (perfil === "admin") {
+              html += `<a href="#" data-id="${row.id}" class="btn btn-verde btn-tooltip btn-respondido" title="Terminar">✔️</a>`;
+              if (revision === true) {
+                  html += `<a href="#" data-id="${row.id}" class="btn btn-rojo btn-tooltip btn-rechazar" title="Rechazar revisión">❌📤</a>`;
+              }
+            } else {
+              if (revision === false) {
+                  html += `<a href="#" data-id="${row.id}" class="btn btn-verde btn-tooltip btn-enviar" title="Enviar a revisión">📤</a>`;
+              }
+            }
+            
+            html += `<a href="#" data-id="${row.id}" class="btn btn-gris btn-tooltip btn-detalle" title="Detalle">📋</a>`;
+            
             if (perfil === "admin") {
                 html =
                 `<a href="/eliminar/${row.id}/" class="btn btn-rojo btn-tooltip" title="Eliminar" onclick="return confirm('¿Eliminar registro?')">❌</a>` +
@@ -94,12 +104,31 @@ $(document).ready(function () {
             }
             
             return html;
-        }
-      },
-      { data: "reiteraciones" },
-    ],
-    columnDefs: [{ orderable: false, targets: [6] }],
-    initComplete: function () {
+          }
+          },
+          { data: "reiteraciones" },
+          {
+          data: "funcionario_asignado",
+          render: function (data, type, row) {
+            if (type !== "display") return data || "";
+            
+            const funcionario = data || "No asignado";
+            const revision = row.revision || false;
+            
+            if (funcionario === "No asignado") {
+            return funcionario;
+            } else if (revision === true) {
+            return `${funcionario} / En espera de revisión`;
+            } else {
+            return `${funcionario} / No terminado`;
+            }
+          }
+          },
+          
+        ],
+        columnDefs: [{ orderable: false, targets: [6] }],
+
+        initComplete: function () {
       setTimeout(function () {
         $('#registrosTable_filter input').attr('placeholder', 'folio, oficio o materia');
       }, 50);
@@ -120,8 +149,7 @@ $(document).ready(function () {
     columns: [
       { data: "folio" },
       { data: "oficio" },
-      {
-        data: "asignaciones",
+      {data: "asignaciones",
         render: function (data, type, row) {
           if (type !== "display") {
             // Para orden/búsqueda devolvemos texto plano
@@ -207,7 +235,7 @@ $(document).ready(function () {
     }
     });
 
-  // =========================
+    // =========================
     // Highlight genérico para cualquier DataTable
     // =========================
     function setupHighlight(tableInstance, tableId, highlightColumns) {
@@ -293,8 +321,63 @@ $(document).ready(function () {
 
     
   });
+  $('#registrosTable').on('click', '.btn-enviar', function (e) {
+    e.preventDefault();
 
-  // =========================
+    const $btn = $(this);
+    const id = $btn.data('id');
+
+    // Confirmar con el usuario
+    if (confirm('¿Estás seguro de que terminaste?')) {
+      // Llamar a la API
+      $.ajax({
+        url: `/api/registro/${id}/respondido/`,
+        type: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken
+        },
+        success: function (response) {
+          console.log('Respuesta:', response);
+          alert('Registro marcado como respondido');
+          tablePendientes.ajax.reload(); // Recarga la tabla
+        },
+        error: function (xhr, status, error) {
+          console.error('Error:', error);
+          alert('Error al marcar como respondido');
+        }
+      });
+    }
+  });
+
+  $('#registrosTable').on('click', '.btn-rechazar', function (e) {
+    e.preventDefault();
+
+    const $btn = $(this);
+    const id = $btn.data('id');
+
+    // Confirmar con el usuario
+    if (confirm('¿Estás seguro de que quieres rechazar?')) {
+      // Llamar a la API
+      $.ajax({
+        url: `/api/registro/${id}/rechazado/`,
+        type: 'POST',
+        headers: {
+          'X-CSRFToken': csrftoken
+        },
+        success: function (response) {
+          console.log('Respuesta:', response);
+          alert('Registro marcado como rechazado');
+          tablePendientes.ajax.reload(); // Recarga la tabla
+        },
+        error: function (xhr, status, error) {
+          console.error('Error:', error);
+          alert('Error al marcar como rechazado');
+        }
+      });
+    }
+  });
+
+// =========================
 // Resaltado de búsqueda
 // =========================
 function highlightSearch() {

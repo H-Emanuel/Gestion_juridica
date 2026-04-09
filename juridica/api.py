@@ -169,9 +169,9 @@ def RegistroJuridico_list(request):
             else:
                 days = None
 
-            print(f"Registro {r.id}: Dias transcurridos calculados = {days}")
             data.append({
                 "id": r.id,
+                "revision": r.terminado_funcinario,
                 "folio": r.folio,
                 "oficio": r.oficio,
                 "asignaciones": r.asignaciones,  # truncamos en el frontend
@@ -179,7 +179,7 @@ def RegistroJuridico_list(request):
                 "fecha_respuesta": r.fecha_respuesta.strftime("%d-%m-%Y") if r.fecha_respuesta else "—",
                 "dias_transcurridos": days,
                 "reiteraciones": r.reiteraciones.count(),
-                "funcionario_asignado": r.funcionario_asignado.username if r.funcionario_asignado else None,
+                "funcionario_asignado": r.funcionario_asignado.username if r.funcionario_asignado else "No asignado",
             })
 
         response = {
@@ -394,6 +394,30 @@ def RegistroSumario_list(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
     
+@csrf_exempt
+def respondido(request, pk):
+    try:
+        registro = RegistroJuridico.objects.get(id=pk)
+        registro.terminado_funcinario = True
+        registro.save()
+        return JsonResponse({
+                "id": registro.id,
+            })
+    except RegistroJuridico.DoesNotExist:
+        return JsonResponse({"error": "Registro no encontrado."}, status=404)
+    
+@csrf_exempt
+def rechazado(request, pk):
+    try:
+        registro = RegistroJuridico.objects.get(id=pk)
+        registro.terminado_funcinario = False
+        registro.save()
+        return JsonResponse({
+                "id": registro.id,
+            })
+    except RegistroJuridico.DoesNotExist:
+        return JsonResponse({"error": "Registro no encontrado."}, status=404)
+
 @csrf_exempt
 def sumario_detalle(request, pk):
     r = get_object_or_404(RegistroSumario, pk=pk)

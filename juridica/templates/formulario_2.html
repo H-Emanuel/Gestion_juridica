@@ -117,6 +117,38 @@
         </fieldset>
 
         <fieldset>
+            <legend>Expediente</legend>
+            <div class="row">
+                <div>
+                    <label>Fecha</label>
+                    <input type="date" name="fecha_expediente"
+                        value="{% if instance %}{{ instance.fecha_expediente|date:'Y-m-d' }}{% endif %}">
+                </div>
+                <div class="attach-col">
+                    {% if instance and instance.expediente %}
+                        <div style="margin-bottom:6px;">
+                            <small>Actual: <a href="{{ instance.expediente.url }}" target="_blank">📎 Ver archivo</a></small>
+                        </div>
+                    {% endif %}
+                    <div class="file-attach" data-name="expediente">
+                        <input class="file-attach__input" type="file" name="expediente" hidden>
+                        <button type="button" class="file-attach__btn file-attach__btn--select">
+                        {% if instance and instance.expediente %}Reemplazar archivo{% else %}Adjuntar archivo{% endif %}
+                        </button>
+                        <span class="file-attach__status" aria-live="polite">
+                        <span class="file-attach__check" aria-hidden="true">✓</span>
+                        <span class="file-attach__text">Archivo cargado</span>
+                        </span>
+                        <span class="file-attach__filename"></span>
+                        <button type="button" class="file-attach__btn file-attach__btn--change">
+                        Cambiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+        <fieldset>
             <legend>Vista Fiscal</legend>
             <div class="row">
                 <div>
@@ -153,8 +185,6 @@
             </div>
         </fieldset>
 
-        
-
         <fieldset>
             <legend>Informe DAJ</legend>
             <div class="row">
@@ -173,6 +203,39 @@
                         <input class="file-attach__input" type="file" name="adjunto_daj" hidden>
                         <button type="button" class="file-attach__btn file-attach__btn--select">
                         {% if instance and instance.adjunto_daj %}Reemplazar archivo{% else %}Adjuntar archivo{% endif %}
+                        </button>
+                        <span class="file-attach__status" aria-live="polite">
+                        <span class="file-attach__check" aria-hidden="true">✓</span>
+                        <span class="file-attach__text">Archivo cargado</span>
+                        </span>
+                        <span class="file-attach__filename"></span>
+                        <button type="button" class="file-attach__btn file-attach__btn--change">
+                        Cambiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+
+
+        <fieldset>
+            <legend>Decreto Alcaldicio</legend>
+            <div class="row">
+                <div>
+                    <label>Fecha</label>
+                    <input type="date" name="fecha_dec_alcadicio"
+                        value="{% if instance %}{{ instance.fecha_dec_alcadicio|date:'Y-m-d' }}{% endif %}">
+                </div>
+                <div class="attach-col">
+                    {% if instance and instance.decreto_alcadicio %}
+                        <div style="margin-bottom:6px;">
+                            <small>Actual: <a href="{{ instance.decreto_alcadicio.url }}" target="_blank">📎 Ver archivo</a></small>
+                        </div>
+                    {% endif %}
+                    <div class="file-attach" data-name="decreto_alcadicio">
+                        <input class="file-attach__input" type="file" name="decreto_alcadicio" hidden>
+                        <button type="button" class="file-attach__btn file-attach__btn--select">
+                        {% if instance and instance.decreto_alcadicio %}Reemplazar archivo{% else %}Adjuntar archivo{% endif %}
                         </button>
                         <span class="file-attach__status" aria-live="polite">
                         <span class="file-attach__check" aria-hidden="true">✓</span>

@@ -34,6 +34,8 @@ def lista_registros(request):
         registros = RegistroJuridico.objects.filter(materia__icontains=query)
     else:
         registros = RegistroJuridico.objects.all()
+    
+    print("perfil:", perfil)
 
     return render(request, "lista.html", {"registros": registros, "perfil": perfil})
 
@@ -97,6 +99,12 @@ def crear_registro(request):
                     fecha_oficio=request.POST.get("fecha_oficio"),
                     fecha_respuesta=request.POST.get("fecha_respuesta") or None,
                 )
+
+                user = request.user
+                if UsuarioPerfil.objects.filter(usuario=user, perfil__nombre="Usuario Normal").exists():
+                    registro.funcionario_asignado = user
+                    registro.save()
+
 
                 asignaciones = request.POST.getlist("asignacion[]")
                 otro = request.POST.get("asignacion_otro", "").strip()
@@ -302,11 +310,12 @@ ETAPAS = [
 ]
 
 SACCIONES = [
-    "1.- Censura",
-    "2.- Multa",
-    "3.- Suspensión del empleo desde treinta Dias a tres meses",
-    "4.- Destitución",
-    "5.- Sobre Seguimiento"
+    "1.- En Proceso",
+    "2.- Censura",
+    "3.- Multa",
+    "4.- Suspensión del empleo desde treinta Dias a tres meses",
+    "5.- Destitución",
+    "6.- Sobreseimiento"
 ]
 
 @login_required(login_url='login')
@@ -354,6 +363,16 @@ def crear_registro_2(request):
             sancion=sancion,
             adjunto_sancion=request.FILES.get("adjunto_sancion"),
             fecha_contrata=request.POST.get("fecha_contrata") or None,
+
+            #-------------
+
+            expediente=request.FILES.get("expediente"),
+            fecha_expediente=request.POST.get("fecha_expediente") or None,
+
+            decreto_alcadicio=request.FILES.get("decreto_alcadicio"),
+            fecha_dec_alcadicio=request.POST.get("fecha_dec_alcadicio") or None,
+
+            
             
             etapa = ETAPAS[0]
         )
@@ -393,6 +412,8 @@ def editar_sumario(request, id):
         sumario.fecha_notificacion_fiscal = request.POST.get("fecha_notificacion_fiscal") or None
         sumario.fecha_daj = request.POST.get("fecha_daj") or None
         sumario.sancion = sancion
+        sumario.fecha_expediente = request.POST.get("fecha_expediente") or None
+        sumario.fecha_dec_alcadicio = request.POST.get("fecha_dec_alcadicio") or None
 
         if request.FILES.get("adjunto_fiscalia"):
             sumario.adjunto_fiscalia = request.FILES.get("adjunto_fiscalia")
@@ -402,6 +423,10 @@ def editar_sumario(request, id):
             sumario.adjunto_daj = request.FILES.get("adjunto_daj")
         if request.FILES.get("adjunto_sancion"):
             sumario.adjunto_sancion = request.FILES.get("adjunto_sancion")
+        if request.FILES.get("expediente"):
+            sumario.expediente = request.FILES.get("expediente")
+        if request.FILES.get("decreto_alcadicio"):
+            sumario.decreto_alcadicio = request.FILES.get("decreto_alcadicio")
 
         nombres = request.POST.getlist("nombre[]")
         grados = request.POST.getlist("grado[]")
