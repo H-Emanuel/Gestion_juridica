@@ -36,6 +36,7 @@ urlpatterns = [
 
     # LOGOUT
     path("login/", views.login, name="login"),
+    path("cambiar-contrasena/", views.change_password, name="change_password"),
 
     path("logout/", views.logout_view, name="logout"),
 ]

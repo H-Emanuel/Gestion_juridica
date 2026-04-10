@@ -9,7 +9,7 @@ import smtplib
 from .function import enviar_correo_smtp,obtener_perfil_usuario
 from django.contrib import messages
 from django.db.models import Max
-from django.contrib.auth import authenticate, login as auth_login
+from django.contrib.auth import authenticate, login as auth_login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.http import JsonResponse
@@ -146,6 +146,34 @@ def logout_view(request):
     from django.contrib.auth import logout
     logout(request)
     return redirect("login")
+
+
+@login_required(login_url='login')
+def change_password(request):
+    if request.method == "POST":
+        old_password = request.POST.get("old_password", "").strip()
+        new_password1 = request.POST.get("new_password1", "")
+        new_password2 = request.POST.get("new_password2", "")
+
+        if not request.user.check_password(old_password):
+            messages.error(request, "La contraseña actual no es correcta.")
+            return render(request, "cambiar_contraseña.html")
+
+        if not new_password1 or not new_password2:
+            messages.error(request, "Debes ingresar y confirmar la nueva contraseña.")
+            return render(request, "cambiar_contraseña.html")
+
+        if new_password1 != new_password2:
+            messages.error(request, "Las nuevas contraseñas no coinciden.")
+            return render(request, "cambiar_contraseña.html")
+
+        request.user.set_password(new_password1)
+        request.user.save(update_fields=["password"])
+        update_session_auth_hash(request, request.user)
+        messages.success(request, "La contraseña fue actualizada correctamente.")
+        return redirect("lista_registros")
+
+    return render(request, "cambiar_contraseña.html")
     
 
 @csrf_exempt

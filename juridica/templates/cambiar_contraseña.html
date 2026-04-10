@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+        <div class="card border-0 mt-4">
+            <div class="card-body p-4 p-md-5">
+                <div class="mb-4">
+                    <h3 class="fw-bold mb-1">Cambiar contraseña</h3>
+                    <p class="text-muted mb-0">Actualiza tu clave sin cerrar la sesión actual.</p>
+                </div>
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="id_old_password" class="form-label">Contraseña actual</label>
+                        <input type="password" id="id_old_password" name="old_password" class="form-control" autocomplete="current-password" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_new_password1" class="form-label">Nueva contraseña</label>
+                        <input type="password" id="id_new_password1" name="new_password1" class="form-control" autocomplete="new-password" required>
+                        <div class="form-text">Solo se validará que ambas contraseñas coincidan.</div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="id_new_password2" class="form-label">Confirmar nueva contraseña</label>
+                        <input type="password" id="id_new_password2" name="new_password2" class="form-control" autocomplete="new-password" required>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end">
+                        <a href="{% url 'lista_registros' %}" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Guardar contraseña</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
