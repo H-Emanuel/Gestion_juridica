@@ -8,15 +8,13 @@
 }
 
 body {
-  display: flex;
-  justify-content: center; 
-  align-items: center;
-  min-height: 100vh;
-  width: 100%;
-  margin: 0; 
-  padding: 0 10px; 
-  flex-direction: column;
-  position: relative; 
+    background: linear-gradient(39deg, rgba(0, 0, 0, 5) 0%, rgb(0 0 0 / 40%) 20%), url(/static/img/fondo.jpeg);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
 }
 
 .container {
@@ -29,20 +27,7 @@ body {
   padding: 0 10px;
 }
 
-body::before {
-  content: "";
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: #1e90ff; /* fallback */
-  background: linear-gradient(to bottom, #1e90ff 0%, #ffffff 100%);
 
-  background-position: center;
-  background-size: cover;
-  filter: brightness(0.6);/* Aquí aplicas tu filtro */
-  z-index: -1; /* Asegura que quede detrás del contenido de .container */
-
-}
 
 .wrapper {
   background: #00000070;
