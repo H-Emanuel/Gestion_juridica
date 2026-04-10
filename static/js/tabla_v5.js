@@ -120,7 +120,7 @@ $(document).ready(function () {
             } else if (revision === true) {
             return `${funcionario} / En espera de revisión`;
             } else {
-            return `${funcionario} / No terminado`;
+            return `${funcionario} / En Proceso`;
             }
           }
           },
