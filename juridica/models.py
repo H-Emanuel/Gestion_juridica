@@ -186,6 +186,9 @@ class RegistroSumario(models.Model):
     oficio_fiscalia = models.CharField(max_length=100, blank=True, null=True)
     fecha_fiscalia = models.DateField(blank=True, null=True)
     adjunto_fiscalia = models.FileField(upload_to=archivo_upload_to_sumario, null=True, blank=True)
+
+    intruye_sumario = models.FileField(upload_to=archivo_upload_to_sumario, blank=True, null=True)
+    fecha_instruccion = models.DateField(blank=True, null=True)
    
     
 

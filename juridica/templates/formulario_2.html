@@ -82,7 +82,39 @@
             </button>
         </fieldset>
 
+         
 
+        <fieldset>
+            <legend>Instruye Sumario</legend>
+            <div class="row">
+                <div>
+                    <label>Fecha</label>
+                    <input type="date" name="fecha_instruccion"
+                        value="{% if instance %}{{ instance.fecha_instruccion|date:'Y-m-d' }}{% endif %}">
+                </div>
+                <div class="attach-col">
+                    {% if instance and instance.intruye_sumario %}
+                        <div style="margin-bottom:6px;">
+                            <small>Actual: <a href="{{ instance.intruye_sumario.url }}" target="_blank">📎 Ver archivo</a></small>
+                        </div>
+                    {% endif %}
+                    <div class="file-attach" data-name="intruye_sumario">
+                        <input class="file-attach__input" type="file" name="intruye_sumario" hidden>
+                        <button type="button" class="file-attach__btn file-attach__btn--select">
+                        {% if instance and instance.intruye_sumario %}Reemplazar archivo{% else %}Adjuntar archivo{% endif %}
+                        </button>
+                        <span class="file-attach__status" aria-live="polite">
+                        <span class="file-attach__check" aria-hidden="true">✓</span>
+                        <span class="file-attach__text">Archivo cargado</span>
+                        </span>
+                        <span class="file-attach__filename"></span>
+                        <button type="button" class="file-attach__btn file-attach__btn--change">
+                        Cambiar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </fieldset>
 
         <fieldset>
             <legend>Notificacion al Fiscal</legend>
