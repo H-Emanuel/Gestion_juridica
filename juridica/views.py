@@ -401,6 +401,9 @@ def crear_registro_2(request):
             fecha_dec_alcadicio=request.POST.get("fecha_dec_alcadicio") or None,
 
             
+            intruye_sumario=request.FILES.get("intruye_sumario"),
+            fecha_instruccion=request.POST.get("fecha_instruccion") or None,
+            
             
             etapa = ETAPAS[0]
         )
@@ -442,6 +445,7 @@ def editar_sumario(request, id):
         sumario.sancion = sancion
         sumario.fecha_expediente = request.POST.get("fecha_expediente") or None
         sumario.fecha_dec_alcadicio = request.POST.get("fecha_dec_alcadicio") or None
+        sumario.fecha_instruccion = request.POST.get("fecha_instruccion") or None
 
         if request.FILES.get("adjunto_fiscalia"):
             sumario.adjunto_fiscalia = request.FILES.get("adjunto_fiscalia")
@@ -455,6 +459,8 @@ def editar_sumario(request, id):
             sumario.expediente = request.FILES.get("expediente")
         if request.FILES.get("decreto_alcadicio"):
             sumario.decreto_alcadicio = request.FILES.get("decreto_alcadicio")
+        if request.FILES.get("intruye_sumario"):
+            sumario.intruye_sumario = request.FILES.get("intruye_sumario")
 
         nombres = request.POST.getlist("nombre[]")
         grados = request.POST.getlist("grado[]")
