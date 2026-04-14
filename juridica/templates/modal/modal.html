@@ -192,7 +192,7 @@ function enviarRespuesta() {
     formData.append('respuesta', respuesta);
     formData.append('archivo', archivo);
     
-    fetch(`api/respondido/${registroId}/`, {
+    fetch(`api/oficio/${registroId}/terminado/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': getCookie('csrftoken')
@@ -201,13 +201,8 @@ function enviarRespuesta() {
     })
     .then(response => response.json())
     .then(data => {
-        alert('Respuesta enviada correctamente');
-        cerrarModal();
-        tablePendientes.ajax.reload(null, false);
-        // 🔥 como ahora pasa al histórico, recargamos también
-        tableHistorico.ajax.reload(null, false);
-        document.getElementById('formResponder').reset();
-
+      alert('Respuesta enviada correctamente');
+      location.reload();
     })
     .catch(error => console.error('Error:', error));
 }

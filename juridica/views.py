@@ -314,6 +314,10 @@ def reiterar_oficio(request, id):
             messages.success(request, "Correo enviado correctamente.")
             return redirect("lista_registros")
 
+        except smtplib.SMTPAuthenticationError:
+            print(f"[reiterar_oficio] ERROR autenticación SMTP")
+            messages.error(request, "Error de autenticación. Asegúrese de que el usuario y contraseña municipal sean los mismos que usa para iniciar sesión en su computadora.")
+            return render(request, "reiterar.html", {"registro": registro})
         except Exception as e:
             # No ocultar el error con redirect ciego
             print(f"[reiterar_oficio] ERROR correo: {repr(e)}")
@@ -646,10 +650,14 @@ def reiterar_sumario(request, id):
             messages.success(request, "Correo enviado correctamente.")
             return redirect("lista_registros")
 
+        except smtplib.SMTPAuthenticationError:
+            print(f"[reiterar_sumario] ERROR autenticación SMTP")
+            messages.error(request, "Error de autenticación. Asegúrese de que el usuario y contraseña municipal sean los mismos que usa para iniciar sesión en su computadora.", extra_tags='alert alert-danger alert-dismissible fade show')
+            return render(request, "reiterar.html", {"sumario": sumario})
         except Exception as e:
             # No ocultar el error con redirect ciego
             print(f"[reiterar_oficio] ERROR correo: {repr(e)}")
-            messages.error(request, f"Error al enviar correo: {e}")
+            messages.error(request, f"Error al enviar correo: {e} ", extra_tags='alert alert-danger alert-dismissible fade show')
             return render(request, "reiterar.html", {"sumario": sumario})
 
     return render(request, "reiterar.html", {"sumario": sumario})

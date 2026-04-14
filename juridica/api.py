@@ -284,10 +284,10 @@ def RegistroJuridico_terminado_list(request):
         return JsonResponse({"error": str(e)}, status=500)
 
 @csrf_exempt
-def oficio_respodido(request, id):
+def oficio_respodido(request, pk):
     
     try:
-        registro = RegistroJuridico.objects.get(id=id)
+        registro = RegistroJuridico.objects.get(id=pk)
         registro.terminado = True
         registro.save()
 
