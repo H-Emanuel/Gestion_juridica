@@ -64,7 +64,7 @@ ASIGNACIONES = [
 
 @login_required(login_url='login')
 def crear_registro(request):
-    usuario = request.user
+  
 
     if request.method == "POST":
         try:

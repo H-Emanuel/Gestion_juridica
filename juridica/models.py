@@ -58,7 +58,7 @@ class RegistroJuridico(models.Model):
     cc = models.CharField(max_length=255, blank=True)
     respuesta = models.TextField(blank=True)
 
-    funcionario_asignado = models.OneToOneField(
+    funcionario_asignado = models.ForeignKey(
         'auth.User',
         related_name='registro_asignado',
         on_delete=models.SET_NULL,
